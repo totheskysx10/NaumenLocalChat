@@ -1,10 +1,12 @@
 package ru.naumen.naumenlocalchat.app.service;
 
+import org.springframework.stereotype.Service;
 import ru.naumen.naumenlocalchat.app.repository.GroupChatRepository;
 
 /**
  * Сервис групповых чатов
  */
+@Service
 public class GroupChatService {
 
     private final GroupChatRepository groupChatRepository;

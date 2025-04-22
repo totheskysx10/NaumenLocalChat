@@ -1,6 +1,8 @@
 package ru.naumen.naumenlocalchat.domain;
 
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,6 +31,18 @@ public class Chat {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private List<User> members;
+
+    public Chat() {
+        this.members = new ArrayList<>();
+    }
+
+    public List<User> getMembers() {
+        return members;
+    }
+
+    public void setMembers(List<User> members) {
+        this.members = members;
+    }
 
     @Override
     public boolean equals(Object o) {

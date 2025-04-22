@@ -1,5 +1,6 @@
 package ru.naumen.naumenlocalchat.app.repository;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import ru.naumen.naumenlocalchat.domain.Message;
 
 import java.util.List;
@@ -7,7 +8,7 @@ import java.util.List;
 /**
  * Репозиторий сообщений
  */
-public interface MessageRepository {
+public interface MessageRepository extends JpaRepository<Message, Long> {
 
     /**
      * Ищет сообщения по идентификатору чата, сортированные по времени

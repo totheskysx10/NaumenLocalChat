@@ -45,6 +45,20 @@ public class Message {
     @JoinColumn(name = "chat_id", nullable = false)
     private Chat chat;
 
+    public Message(User sender, String content) {
+        this.sender = sender;
+        this.content = content;
+        this.timestamp = LocalDateTime.now();
+    }
+
+    public Chat getChat() {
+        return chat;
+    }
+
+    public void setChat(Chat chat) {
+        this.chat = chat;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {

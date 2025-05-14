@@ -9,8 +9,8 @@ import org.mockito.MockitoAnnotations;
 import ru.naumen.naumenlocalchat.app.repository.UserRepository;
 import ru.naumen.naumenlocalchat.domain.*;
 import ru.naumen.naumenlocalchat.exception.InvalidTokenException;
-import ru.naumen.naumenlocalchat.exception.UserDuplicateException;
-import ru.naumen.naumenlocalchat.exception.UserNotFoundException;
+import ru.naumen.naumenlocalchat.exception.EntityDuplicateException;
+import ru.naumen.naumenlocalchat.exception.EntityNotFoundException;
 import ru.naumen.naumenlocalchat.extern.infrastructure.EmailService;
 
 import java.util.List;
@@ -52,7 +52,7 @@ class UserServiceTest {
      * Тест создания пользователя
      */
     @Test
-    void testCreateUser() throws UserDuplicateException {
+    void testCreateUser() throws EntityDuplicateException {
         User user = new User(1L, "test@test.com", false, "pass", "f", "l");
         Mockito.when(userRepository.existsByEmail("test@test.com")).thenReturn(false);
 
@@ -71,7 +71,7 @@ class UserServiceTest {
         User user = new User(1L, "test@test.com", false, "pass", "f", "l");
         Mockito.when(userRepository.existsByEmail("test@test.com")).thenReturn(true);
 
-        Exception e = Assertions.assertThrows(UserDuplicateException.class, () -> userService.createUser(user));
+        Exception e = Assertions.assertThrows(EntityDuplicateException.class, () -> userService.createUser(user));
         Assertions.assertEquals("Пользователь с Email test@test.com уже существует!", e.getMessage());
         Mockito.verify(userRepository, Mockito.never()).save(Mockito.any(User.class));
     }
@@ -80,7 +80,7 @@ class UserServiceTest {
      * Тест получения пользователя по ID
      */
     @Test
-    void testGetUserById() throws UserNotFoundException {
+    void testGetUserById() throws EntityNotFoundException {
         User user = new User(1L, "test@test.com", false, "pass", "f", "l");
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
@@ -96,7 +96,7 @@ class UserServiceTest {
     void testGetUserByIdNotFound() {
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
-        Exception e = Assertions.assertThrows(UserNotFoundException.class, () -> userService.getUserById(1L));
+        Exception e = Assertions.assertThrows(EntityNotFoundException.class, () -> userService.getUserById(1L));
         Assertions.assertEquals("Пользователь с Id 1 не найден!", e.getMessage());
     }
 
@@ -104,17 +104,13 @@ class UserServiceTest {
      * Тест удаления пользователя
      */
     @Test
-    void testDeleteUser() throws UserNotFoundException {
+    void testDeleteUser() throws EntityNotFoundException {
         User user = new User(1L, "test@test.com", false, "pass", "f", "l");
-        Chat chat = new Chat();
-        chat.getMembers().add(user);
-        user.setChats(List.of(chat));
 
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         userService.deleteUser(1L);
 
-        Assertions.assertTrue(chat.getMembers().isEmpty());
         Mockito.verify(userRepository).delete(user);
     }
 
@@ -122,7 +118,7 @@ class UserServiceTest {
      * Тест отправки сообщения для подтверждения email
      */
     @Test
-    void testSendMessageForEmailConfirmation() throws UserNotFoundException {
+    void testSendMessageForEmailConfirmation() throws EntityNotFoundException {
         User user = new User(1L, "test@test.com", false, "pass", "f", "l");
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         Mockito.when(tokenService.generateToken(TokenType.EMAIL_CONFIRM, 1L)).thenReturn("token");
@@ -145,7 +141,7 @@ class UserServiceTest {
      * Тест отправки сообщения для сброса пароля
      */
     @Test
-    void testSendMessageForPasswordReset() throws UserNotFoundException {
+    void testSendMessageForPasswordReset() throws EntityNotFoundException {
         User user = new User(1L, "test@test.com", false, "pass", "f", "l");
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         Mockito.when(tokenService.generateToken(TokenType.RESET_PASSWORD, 1L)).thenReturn("token");
@@ -168,7 +164,7 @@ class UserServiceTest {
      * Тест подтверждения email с валидным токеном
      */
     @Test
-    void testConfirmEmail() throws UserNotFoundException, InvalidTokenException {
+    void testConfirmEmail() throws EntityNotFoundException, InvalidTokenException {
         User user = new User(1L, "test@test.com", false, "pass", "f", "l");
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         Mockito.when(tokenService.isTokenValid(TokenType.EMAIL_CONFIRM, "token", 1L)).thenReturn(true);
@@ -194,7 +190,7 @@ class UserServiceTest {
      * Тест сброса пароля с валидным токеном
      */
     @Test
-    void testResetPassword() throws UserNotFoundException, InvalidTokenException {
+    void testResetPassword() throws EntityNotFoundException, InvalidTokenException {
         User user = new User(1L, "test@test.com", false, "pass", "f", "l");
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         Mockito.when(tokenService.isTokenValid(TokenType.RESET_PASSWORD, "token", 1L)).thenReturn(true);

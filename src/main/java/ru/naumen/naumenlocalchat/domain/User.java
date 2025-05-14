@@ -3,6 +3,7 @@ package ru.naumen.naumenlocalchat.domain;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -59,7 +60,7 @@ public class User {
     /**
      * Чаты пользователя
      */
-    @ManyToMany(mappedBy = "members")
+    @ManyToMany(mappedBy = "members", fetch = FetchType.EAGER)
     private List<Chat> chats;
 
     public User(Long id,
@@ -143,5 +144,15 @@ public class User {
     @Override
     public int hashCode() {
         return Objects.hash(id, email, emailConfirmed, password, firstName, lastName, roles, chats);
+    }
+
+    /**
+     * Удаляет пользователя из чатов при удалении
+     */
+    @PreRemove
+    private void removeFromChats() {
+        for (Chat chat : new HashSet<>(chats)) {
+            chat.getMembers().remove(this);
+        }
     }
 }

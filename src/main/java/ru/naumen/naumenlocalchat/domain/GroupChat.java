@@ -1,7 +1,8 @@
 package ru.naumen.naumenlocalchat.domain;
 
 import jakarta.persistence.*;
-import java.util.List;
+
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -34,7 +35,21 @@ public class GroupChat extends Chat {
             joinColumns = @JoinColumn(name = "chat_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private List<User> chatBlackList;
+    private Set<User> chatBlackList;
+
+    public GroupChat(Set<User> members, String name) {
+        super(members);
+        this.name = name;
+        this.chatBlackList = new HashSet<>();
+    }
+
+    public GroupChat() {
+
+    }
+
+    public Set<User> getChatBlackList() {
+        return chatBlackList;
+    }
 
     @Override
     public boolean equals(Object o) {

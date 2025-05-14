@@ -17,4 +17,10 @@ public interface GroupChatRepository extends JpaRepository<GroupChat, Long> {
      * @param user участник
      */
     List<GroupChat> findByNameContainingIgnoreCaseAndMembersContaining(String name, User user);
+
+    /**
+     * Ищет групповые чаты пользователя
+     * @param user пользователь
+     */
+    List<GroupChat> findByMembersContaining(User user);
 }

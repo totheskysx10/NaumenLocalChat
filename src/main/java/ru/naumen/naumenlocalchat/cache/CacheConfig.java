@@ -1,4 +1,4 @@
-package ru.naumen.naumenlocalchat.config;
+package ru.naumen.naumenlocalchat.cache;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.context.annotation.Bean;

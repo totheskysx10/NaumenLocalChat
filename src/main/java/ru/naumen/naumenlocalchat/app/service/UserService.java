@@ -10,8 +10,8 @@ import ru.naumen.naumenlocalchat.domain.Role;
 import ru.naumen.naumenlocalchat.domain.TokenType;
 import ru.naumen.naumenlocalchat.domain.User;
 import ru.naumen.naumenlocalchat.exception.InvalidTokenException;
-import ru.naumen.naumenlocalchat.exception.UserDuplicateException;
-import ru.naumen.naumenlocalchat.exception.UserNotFoundException;
+import ru.naumen.naumenlocalchat.exception.EntityDuplicateException;
+import ru.naumen.naumenlocalchat.exception.EntityNotFoundException;
 import ru.naumen.naumenlocalchat.extern.infrastructure.EmailService;
 
 import java.util.List;
@@ -45,15 +45,14 @@ public class UserService {
     /**
      * Создаёт пользователя
      * @param user пользователь
-     * @throws UserDuplicateException если пользователь с email уже есть
+     * @throws EntityDuplicateException если пользователь с email уже есть
      */
-    public void createUser(User user) throws UserDuplicateException {
+    public void createUser(User user) throws EntityDuplicateException {
         if (userRepository.existsByEmail(user.getEmail())) {
-            throw new UserDuplicateException("Пользователь с Email " + user.getEmail() + " уже существует!");
+            throw new EntityDuplicateException("Пользователь с Email " + user.getEmail() + " уже существует!");
         }
 
         user.setRoles(List.of(Role.USER));
-        user.setChats(List.of());
 
         userRepository.save(user);
         log.info("Создан пользователь с email {} и id {}", user.getEmail(), user.getId());
@@ -62,20 +61,19 @@ public class UserService {
     /**
      * Ищет пользователя по идентификатору
      * @param userId идентификатор
-     * @throws UserNotFoundException если пользователь не найден
+     * @throws EntityNotFoundException если пользователь не найден
      */
-    public User getUserById(Long userId) throws UserNotFoundException {
+    public User getUserById(Long userId) throws EntityNotFoundException {
         Optional<User> user = userRepository.findById(userId);
-        return user.orElseThrow(() -> new UserNotFoundException("Пользователь с Id " + userId + " не найден!"));
+        return user.orElseThrow(() -> new EntityNotFoundException("Пользователь с Id " + userId + " не найден!"));
     }
 
     /**
-     * Удаляет пользователя, предварительно удаляя его из всех чатов
+     * Удаляет пользователя
      * @param userId идентификатор пользователя
      */
-    public void deleteUser(Long userId) throws UserNotFoundException {
+    public void deleteUser(Long userId) throws EntityNotFoundException {
         User user = getUserById(userId);
-        user.getChats().forEach(chat -> chat.getMembers().remove(user));
         userRepository.delete(user);
         log.info("Удалён пользователь с email {} и id {}", user.getEmail(), user.getId());
     }
@@ -84,7 +82,7 @@ public class UserService {
      * Отправляет на почту сообщение для подтверждения Email
      * @param userId идентификатор пользователя
      */
-    public void sendMessageForEmailConfirmation(Long userId) throws UserNotFoundException {
+    public void sendMessageForEmailConfirmation(Long userId) throws EntityNotFoundException {
         User user = getUserById(userId);
         String token = tokenService.generateToken(TokenType.EMAIL_CONFIRM, userId);
         String confirmEmailLink = confirmEmailLinkTemplate.replace("{id}", "id=" + user.getId().toString()) + token;
@@ -100,7 +98,7 @@ public class UserService {
      * Отправляет на почту сообщение для сброса пароля
      * @param userId идентификатор пользователя
      */
-    public void sendMessageForPasswordReset(Long userId) throws UserNotFoundException {
+    public void sendMessageForPasswordReset(Long userId) throws EntityNotFoundException {
         User user = getUserById(userId);
         String token = tokenService.generateToken(TokenType.RESET_PASSWORD, userId);
         String resetPasswordLink = resetPasswordLinkTemplate.replace("{id}", "id=" + user.getId().toString()) + token;
@@ -118,7 +116,7 @@ public class UserService {
      * @param userId идентификатор пользователя
      * @throws InvalidTokenException если токен невалиден
      */
-    public void confirmEmail(String token, Long userId) throws UserNotFoundException, InvalidTokenException {
+    public void confirmEmail(String token, Long userId) throws EntityNotFoundException, InvalidTokenException {
         boolean tokenValid = tokenService.isTokenValid(TokenType.EMAIL_CONFIRM, token, userId);
 
         if (tokenValid) {
@@ -138,7 +136,7 @@ public class UserService {
      * @param newEncodedPassword шифрованный новый пароль
      * @throws InvalidTokenException если токен невалиден
      */
-    public void resetPassword(String token, Long userId, String newEncodedPassword) throws UserNotFoundException, InvalidTokenException {
+    public void resetPassword(String token, Long userId, String newEncodedPassword) throws EntityNotFoundException, InvalidTokenException {
         boolean tokenValid = tokenService.isTokenValid(TokenType.RESET_PASSWORD, token, userId);
 
         if (tokenValid) {

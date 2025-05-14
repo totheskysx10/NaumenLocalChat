@@ -2,9 +2,7 @@ package ru.naumen.naumenlocalchat.domain;
 
 import jakarta.persistence.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Чат
@@ -13,7 +11,6 @@ import java.util.Objects;
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "chats")
 public class Chat {
-
     /**
      * Идентификатор
      */
@@ -24,23 +21,31 @@ public class Chat {
     /**
      * Участники чата
      */
-    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "chat_members",
             joinColumns = @JoinColumn(name = "chat_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private List<User> members;
+    private Set<User> members;
 
     public Chat() {
-        this.members = new ArrayList<>();
+        this.members = new HashSet<>();
     }
 
-    public List<User> getMembers() {
+    public Chat(Set<User> members) {
+        this.members = members;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Set<User> getMembers() {
         return members;
     }
 
-    public void setMembers(List<User> members) {
+    public void setMembers(Set<User> members) {
         this.members = members;
     }
 

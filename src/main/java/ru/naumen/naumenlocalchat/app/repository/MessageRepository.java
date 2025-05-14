@@ -17,9 +17,9 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     List<Message> findByChatIdOrderByTimestampAsc(Long chatId);
 
     /**
-     * Ищет сообщения по идентификатору чата и контенту, сортированные по времени
+     * Ищет сообщения по идентификатору чата и текстовому запросу, сортированные по времени
      * @param chatId идентификатор чата
-     * @param content контент
+     * @param query запрос
      */
-    List<Message> findByChatIdAndContentContainingIgnoreCaseOrderByTimestampAsc(Long chatId, String content);
+    List<Message> findByChatIdAndContentContainingIgnoreCaseOrderByTimestampAsc(Long chatId, String query);
 }

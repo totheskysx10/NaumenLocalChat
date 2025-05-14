@@ -46,9 +46,9 @@ class GroupChatServiceTest {
      */
     @Test
     void testCreateGroupChat() throws InvalidChatException {
-        User user1 = new User(1L, "user1@test.com", false, "pass1", "f1", "l1");
-        User user2 = new User(2L, "user2@test.com", false, "pass2", "f2", "l2");
-        User user3 = new User(3L, "user3@test.com", false, "pass3", "f3", "l3");
+        User user1 = new User("user1@test.com", "pass1", "f1", "l1");
+        User user2 = new User("user2@test.com", "pass2", "f2", "l2");
+        User user3 = new User("user3@test.com", "pass3", "f3", "l3");
         GroupChat groupChat = new GroupChat(Set.of(user1, user2, user3), "name");
 
         groupChatService.createGroupChat(groupChat);
@@ -64,8 +64,8 @@ class GroupChatServiceTest {
      */
     @Test
     void testCreateGroupChatWithLessThanThreeMembers() {
-        User user1 = new User(1L, "user1@test.com", false, "pass1", "f1", "l1");
-        User user2 = new User(2L, "user2@test.com", false, "pass2", "f2", "l2");
+        User user1 = new User("user1@test.com", "pass1", "f1", "l1");
+        User user2 = new User("user2@test.com", "pass2", "f2", "l2");
         GroupChat groupChat = new GroupChat(Set.of(user1, user2), "name");
 
         Exception e = Assertions.assertThrows(InvalidChatException.class, () -> groupChatService.createGroupChat(groupChat));
@@ -102,7 +102,7 @@ class GroupChatServiceTest {
      */
     @Test
     void testFindUserGroupChatsByNameContaining() throws EntityNotFoundException {
-        User user = new User(1L, "user@test.com", false, "pass", "f", "l");
+        User user = new User("user@test.com", "pass", "f", "l");
         List<GroupChat> expectedChats = List.of(new GroupChat(), new GroupChat());
 
         Mockito.when(userService.getUserById(1L)).thenReturn(user);
@@ -118,7 +118,7 @@ class GroupChatServiceTest {
      */
     @Test
     void testFindUserGroupChats() throws EntityNotFoundException {
-        User user = new User(1L, "user@test.com", false, "pass", "f", "l");
+        User user = new User("user@test.com", "pass", "f", "l");
         List<GroupChat> expectedChats = List.of(new GroupChat(), new GroupChat());
 
         Mockito.when(userService.getUserById(1L)).thenReturn(user);
@@ -134,8 +134,8 @@ class GroupChatServiceTest {
      */
     @Test
     void testDeleteGroupChatById() throws EntityNotFoundException {
-        User user1 = new User(1L, "user1@test.com", false, "pass1", "f1", "l1");
-        User user2 = new User(2L, "user2@test.com", false, "pass2", "f2", "l2");
+        User user1 = new User("user1@test.com", "pass1", "f1", "l1");
+        User user2 = new User("user2@test.com", "pass2", "f2", "l2");
         GroupChat groupChat = new GroupChat(Set.of(user1, user2), "name");
 
         Mockito.when(groupChatRepository.findById(1L)).thenReturn(Optional.of(groupChat));
@@ -152,9 +152,9 @@ class GroupChatServiceTest {
      */
     @Test
     void testBlockUser() throws EntityNotFoundException, BlacklistException {
-        User user1 = new User(1L, "user1@test.com", false, "pass1", "f1", "l1");
-        User user2 = new User(2L, "user2@test.com", false, "pass2", "f2", "l2");
-        User user3 = new User(3L, "user3@test.com", false, "pass3", "f3", "l3");
+        User user1 = new User("user1@test.com", "pass1", "f1", "l1");
+        User user2 = new User("user2@test.com", "pass2", "f2", "l2");
+        User user3 = new User("user3@test.com", "pass3", "f3", "l3");
         GroupChat groupChat = new GroupChat(new HashSet<>(Set.of(user1, user2, user3)), "name");
 
         Mockito.when(groupChatRepository.findById(1L)).thenReturn(Optional.of(groupChat));
@@ -172,7 +172,7 @@ class GroupChatServiceTest {
      */
     @Test
     void testBlockUserNotInChat() throws EntityNotFoundException {
-        User user = new User(1L, "user@test.com", false, "pass", "f", "l");
+        User user = new User("user@test.com", "pass", "f", "l");
         GroupChat groupChat = new GroupChat();
 
         Mockito.when(groupChatRepository.findById(1L)).thenReturn(Optional.of(groupChat));
@@ -188,9 +188,9 @@ class GroupChatServiceTest {
      */
     @Test
     void testUnblockUser() throws EntityNotFoundException, BlacklistException {
-        User user1 = new User(1L, "user1@test.com", false, "pass1", "f1", "l1");
-        User user2 = new User(2L, "user2@test.com", false, "pass2", "f2", "l2");
-        User user3 = new User(3L, "user3@test.com", false, "pass3", "f3", "l3");
+        User user1 = new User("user1@test.com", "pass1", "f1", "l1");
+        User user2 = new User("user2@test.com", "pass2", "f2", "l2");
+        User user3 = new User("user3@test.com", "pass3", "f3", "l3");
         GroupChat groupChat = new GroupChat(new HashSet<>(Set.of(user1, user2, user3)), "name");
         groupChat.getChatBlackList().add(user1);
 
@@ -209,9 +209,9 @@ class GroupChatServiceTest {
      */
     @Test
     void testUnblockUserNotInBlacklist() throws EntityNotFoundException {
-        User user1 = new User(1L, "user1@test.com", false, "pass1", "f1", "l1");
-        User user2 = new User(2L, "user2@test.com", false, "pass2", "f2", "l2");
-        User user3 = new User(3L, "user3@test.com", false, "pass3", "f3", "l3");
+        User user1 = new User("user1@test.com", "pass1", "f1", "l1");
+        User user2 = new User("user2@test.com", "pass2", "f2", "l2");
+        User user3 = new User("user3@test.com", "pass3", "f3", "l3");
         GroupChat groupChat = new GroupChat(Set.of(user1, user2, user3), "name");
 
         Mockito.when(groupChatRepository.findById(1L)).thenReturn(Optional.of(groupChat));

@@ -51,8 +51,28 @@ public class Message {
         this.timestamp = LocalDateTime.now();
     }
 
+    public Message() {
+
+    }
+
     public Chat getChat() {
         return chat;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public User getSender() {
+        return sender;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
     }
 
     public void setChat(Chat chat) {

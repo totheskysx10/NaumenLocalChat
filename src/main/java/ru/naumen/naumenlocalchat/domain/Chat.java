@@ -11,6 +11,7 @@ import java.util.*;
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "chats")
 public class Chat {
+
     /**
      * Идентификатор
      */

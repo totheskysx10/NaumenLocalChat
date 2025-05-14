@@ -53,7 +53,7 @@ class UserServiceTest {
      */
     @Test
     void testCreateUser() throws EntityDuplicateException {
-        User user = new User(1L, "test@test.com", false, "pass", "f", "l");
+        User user = new User("test@test.com", "pass", "f", "l");
         Mockito.when(userRepository.existsByEmail("test@test.com")).thenReturn(false);
 
         userService.createUser(user);
@@ -68,7 +68,7 @@ class UserServiceTest {
      */
     @Test
     void testCreateUserDuplicate() {
-        User user = new User(1L, "test@test.com", false, "pass", "f", "l");
+        User user = new User("test@test.com", "pass", "f", "l");
         Mockito.when(userRepository.existsByEmail("test@test.com")).thenReturn(true);
 
         Exception e = Assertions.assertThrows(EntityDuplicateException.class, () -> userService.createUser(user));
@@ -81,7 +81,7 @@ class UserServiceTest {
      */
     @Test
     void testGetUserById() throws EntityNotFoundException {
-        User user = new User(1L, "test@test.com", false, "pass", "f", "l");
+        User user = new User("test@test.com", "pass", "f", "l");
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         User foundUser = userService.getUserById(1L);
@@ -105,7 +105,7 @@ class UserServiceTest {
      */
     @Test
     void testDeleteUser() throws EntityNotFoundException {
-        User user = new User(1L, "test@test.com", false, "pass", "f", "l");
+        User user = new User("test@test.com", "pass", "f", "l");
 
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
@@ -119,7 +119,7 @@ class UserServiceTest {
      */
     @Test
     void testSendMessageForEmailConfirmation() throws EntityNotFoundException {
-        User user = new User(1L, "test@test.com", false, "pass", "f", "l");
+        User user = new User("test@test.com", "pass", "f", "l");
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         Mockito.when(tokenService.generateToken(TokenType.EMAIL_CONFIRM, 1L)).thenReturn("token");
 
@@ -142,7 +142,7 @@ class UserServiceTest {
      */
     @Test
     void testSendMessageForPasswordReset() throws EntityNotFoundException {
-        User user = new User(1L, "test@test.com", false, "pass", "f", "l");
+        User user = new User("test@test.com", "pass", "f", "l");
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         Mockito.when(tokenService.generateToken(TokenType.RESET_PASSWORD, 1L)).thenReturn("token");
 
@@ -165,7 +165,7 @@ class UserServiceTest {
      */
     @Test
     void testConfirmEmail() throws EntityNotFoundException, InvalidTokenException {
-        User user = new User(1L, "test@test.com", false, "pass", "f", "l");
+        User user = new User("test@test.com", "pass", "f", "l");
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         Mockito.when(tokenService.isTokenValid(TokenType.EMAIL_CONFIRM, "token", 1L)).thenReturn(true);
 
@@ -191,7 +191,7 @@ class UserServiceTest {
      */
     @Test
     void testResetPassword() throws EntityNotFoundException, InvalidTokenException {
-        User user = new User(1L, "test@test.com", false, "pass", "f", "l");
+        User user = new User("test@test.com", "pass", "f", "l");
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         Mockito.when(tokenService.isTokenValid(TokenType.RESET_PASSWORD, "token", 1L)).thenReturn(true);
 

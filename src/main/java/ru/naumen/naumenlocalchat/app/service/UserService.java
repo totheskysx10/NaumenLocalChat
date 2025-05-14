@@ -85,7 +85,7 @@ public class UserService {
     public void sendMessageForEmailConfirmation(Long userId) throws EntityNotFoundException {
         User user = getUserById(userId);
         String token = tokenService.generateToken(TokenType.EMAIL_CONFIRM, userId);
-        String confirmEmailLink = confirmEmailLinkTemplate.replace("{id}", "id=" + user.getId().toString()) + token;
+        String confirmEmailLink = confirmEmailLinkTemplate.replace("{id}", "id=" + userId.toString()) + token;
 
         String subject = EmailData.CONFIRM_EMAIL.getEmailSubject();
         String message = String.format(EmailData.CONFIRM_EMAIL.getEmailMessage(), confirmEmailLink);
@@ -101,7 +101,7 @@ public class UserService {
     public void sendMessageForPasswordReset(Long userId) throws EntityNotFoundException {
         User user = getUserById(userId);
         String token = tokenService.generateToken(TokenType.RESET_PASSWORD, userId);
-        String resetPasswordLink = resetPasswordLinkTemplate.replace("{id}", "id=" + user.getId().toString()) + token;
+        String resetPasswordLink = resetPasswordLinkTemplate.replace("{id}", "id=" + userId.toString()) + token;
 
         String subject = EmailData.RESET_PASSWORD.getEmailSubject();
         String message = String.format(EmailData.RESET_PASSWORD.getEmailMessage(), resetPasswordLink);

@@ -63,15 +63,12 @@ public class User {
     @ManyToMany(mappedBy = "members", fetch = FetchType.EAGER)
     private List<Chat> chats;
 
-    public User(Long id,
-                String email,
-                boolean emailConfirmed,
+    public User(String email,
                 String password,
                 String firstName,
                 String lastName) {
-        this.id = id;
         this.email = email;
-        this.emailConfirmed = emailConfirmed;
+        this.emailConfirmed = false;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -121,6 +118,14 @@ public class User {
 
     public void setEmailConfirmed(boolean emailConfirmed) {
         this.emailConfirmed = emailConfirmed;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
     }
 
     @Override

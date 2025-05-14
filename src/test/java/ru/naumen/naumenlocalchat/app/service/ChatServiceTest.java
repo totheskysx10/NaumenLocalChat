@@ -45,8 +45,8 @@ class ChatServiceTest {
      */
     @Test
     void createChat() throws EntityDuplicateException, InvalidChatException {
-        User user1 = new User(1L, "test@test.com", false, "pass", "f", "l");
-        User user2 = new User(2L, "test2@test.com", false, "pass2", "f2", "l2");
+        User user1 = new User("test@test.com", "pass", "f", "l");
+        User user2 = new User("test2@test.com", "pass2", "f2", "l2");
         Chat chat = new Chat(Set.of(user1, user2));
 
         chatService.createChat(chat);
@@ -61,9 +61,9 @@ class ChatServiceTest {
      */
     @Test
     void createChatMoreThanTwoUsers() {
-        User user1 = new User(1L, "test@test.com", false, "pass", "f", "l");
-        User user2 = new User(2L, "test2@test.com", false, "pass2", "f2", "l2");
-        User user3 = new User(3L, "test3@test.com", false, "pass3", "f3", "l3");
+        User user1 = new User("test@test.com", "pass", "f", "l");
+        User user2 = new User("test2@test.com", "pass2", "f2", "l2");
+        User user3 = new User("test3@test.com", "pass3", "f3", "l3");
         Chat chat = new Chat(Set.of(user1, user2, user3));
 
         Exception e = Assertions.assertThrows(InvalidChatException.class, () -> chatService.createChat(chat));
@@ -76,8 +76,8 @@ class ChatServiceTest {
      */
     @Test
     void createChatDuplicateUsers() {
-        User user1 = new User(1L, "test@test.com", false, "pass", "f", "l");
-        User user2 = new User(2L, "test2@test.com", false, "pass2", "f2", "l2");
+        User user1 = new User("test@test.com", "pass", "f", "l");
+        User user2 = new User("test2@test.com", "pass2", "f2", "l2");
         Set<User> users = Set.of(user1, user2);
         Mockito.when(chatRepository.existsByMembers(users, 2)).thenReturn(true);
         Chat chat = new Chat(Set.of(user1, user2));
@@ -116,7 +116,7 @@ class ChatServiceTest {
      */
     @Test
     void testFindUserChats() throws EntityNotFoundException {
-        User user = new User(1L, "test@test.com", false, "pass", "f", "l");
+        User user = new User("test@test.com", "pass", "f", "l");
         List<Chat> expectedChats = List.of(new Chat(), new Chat());
 
         Mockito.when(userService.getUserById(1L)).thenReturn(user);
@@ -143,8 +143,8 @@ class ChatServiceTest {
      */
     @Test
     void testDeleteChatById() throws EntityNotFoundException {
-        User user1 = new User(1L, "test@test.com", false, "pass", "f", "l");
-        User user2 = new User(2L, "test2@test.com", false, "pass2", "f2", "l2");
+        User user1 = new User("test@test.com", "pass", "f", "l");
+        User user2 = new User("test2@test.com", "pass2", "f2", "l2");
         Chat chat = new Chat(Set.of(user1, user2));
 
         Mockito.when(chatRepository.findById(1L)).thenReturn(Optional.of(chat));

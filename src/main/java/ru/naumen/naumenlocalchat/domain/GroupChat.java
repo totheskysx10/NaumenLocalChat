@@ -47,6 +47,14 @@ public class GroupChat extends Chat {
 
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public User getAdmin() {
+        return admin;
+    }
+
     public Set<User> getChatBlackList() {
         return chatBlackList;
     }

@@ -52,8 +52,8 @@ class MessageServiceTest {
      */
     @Test
     void testSendMessageToChat() throws EntityNotFoundException {
-        User user1 = new User(1L, "user1@test.com", false, "pass1", "f1", "l1");
-        User user2 = new User(2L, "user2@test.com", false, "pass2", "f2", "l2");
+        User user1 = new User("user1@test.com", "pass1", "f1", "l1");
+        User user2 = new User("user2@test.com", "pass2", "f2", "l2");
         Chat chat = new Chat(Set.of(user1, user2));
         Message message = new Message(user1, "message");
 
@@ -72,9 +72,9 @@ class MessageServiceTest {
      */
     @Test
     void testSendMessageToGroupChat() throws EntityNotFoundException {
-        User user1 = new User(1L, "user1@test.com", false, "pass1", "f1", "l1");
-        User user2 = new User(2L, "user2@test.com", false, "pass2", "f2", "l2");
-        User user3 = new User(3L, "user3@test.com", false, "pass3", "f3", "l3");
+        User user1 = new User("user1@test.com", "pass1", "f1", "l1");
+        User user2 = new User("user2@test.com", "pass2", "f2", "l2");
+        User user3 = new User("user3@test.com", "pass3", "f3", "l3");
         GroupChat groupChat = new GroupChat(Set.of(user1, user2, user3), "name");
         Message message = new Message(user1, "message");
 
@@ -94,7 +94,7 @@ class MessageServiceTest {
      */
     @Test
     void testSendMessageToNonExistentChat() throws EntityNotFoundException {
-        User user1 = new User(1L, "user1@test.com", false, "pass1", "f1", "l1");
+        User user1 = new User("user1@test.com", "pass1", "f1", "l1");
         Message message = new Message(user1, "message");
 
         Mockito.when(chatService.findChatById(1L)).thenThrow(new EntityNotFoundException("Not found"));
@@ -110,8 +110,8 @@ class MessageServiceTest {
      */
     @Test
     void testFindChatMessages() {
-        User user1 = new User(1L, "user1@test.com", false, "pass1", "f1", "l1");
-        User user2 = new User(2L, "user2@test.com", false, "pass2", "f2", "l2");
+        User user1 = new User("user1@test.com", "pass1", "f1", "l1");
+        User user2 = new User("user2@test.com", "pass2", "f2", "l2");
 
         Message message1 = new Message(user1, "message1");
         Message message2 = new Message(user2, "message2");
@@ -130,8 +130,8 @@ class MessageServiceTest {
      */
     @Test
     void testSearchMessagesInChat() {
-        User user1 = new User(1L, "user1@test.com", false, "pass1", "f1", "l1");
-        User user2 = new User(2L, "user2@test.com", false, "pass2", "f2", "l2");
+        User user1 = new User("user1@test.com", "pass1", "f1", "l1");
+        User user2 = new User("user2@test.com", "pass2", "f2", "l2");
 
         Message message1 = new Message(user1, "message1");
         Message message2 = new Message(user2, "message2");

@@ -14,10 +14,7 @@ import ru.naumen.naumenlocalchat.exception.BlacklistException;
 import ru.naumen.naumenlocalchat.exception.EntityNotFoundException;
 import ru.naumen.naumenlocalchat.exception.InvalidChatException;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Тест сервиса групповых чатов
@@ -45,13 +42,13 @@ class GroupChatServiceTest {
      * Тест создания группового чата
      */
     @Test
-    void testCreateGroupChat() throws InvalidChatException {
+    void testCreateGroupChat() throws InvalidChatException, EntityNotFoundException {
         User user1 = new User("user1@test.com", "pass1", "f1", "l1");
         User user2 = new User("user2@test.com", "pass2", "f2", "l2");
         User user3 = new User("user3@test.com", "pass3", "f3", "l3");
         GroupChat groupChat = new GroupChat(Set.of(user1, user2, user3), "name");
 
-        groupChatService.createGroupChat(groupChat);
+        groupChatService.createGroupChat(groupChat, 1L);
 
         Mockito.verify(groupChatRepository).save(groupChat);
         Assertions.assertTrue(user1.getChats().contains(groupChat));
@@ -68,7 +65,7 @@ class GroupChatServiceTest {
         User user2 = new User("user2@test.com", "pass2", "f2", "l2");
         GroupChat groupChat = new GroupChat(Set.of(user1, user2), "name");
 
-        Exception e = Assertions.assertThrows(InvalidChatException.class, () -> groupChatService.createGroupChat(groupChat));
+        Exception e = Assertions.assertThrows(InvalidChatException.class, () -> groupChatService.createGroupChat(groupChat, 1L));
         Assertions.assertEquals("Количество участников должно быть минимум 3!", e.getMessage());
         Mockito.verify(groupChatRepository, Mockito.never()).save(Mockito.any());
     }

@@ -55,6 +55,10 @@ public class GroupChat extends Chat {
         return admin;
     }
 
+    public void setAdmin(User admin) {
+        this.admin = admin;
+    }
+
     public Set<User> getChatBlackList() {
         return chatBlackList;
     }

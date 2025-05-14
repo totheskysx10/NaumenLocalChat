@@ -34,4 +34,26 @@ public class CacheConfig {
                 .maximumSize(10_000)
                 .build();
     }
+
+    /**
+     * Кэш кодов для простых чатов - живут 60 минут (Код -> идентификатор пригласившего пользователя)
+     */
+    @Bean
+    public Cache<String, Long> chatCodeCache() {
+        return Caffeine.newBuilder()
+                .expireAfterWrite(60, TimeUnit.MINUTES)
+                .maximumSize(10_000)
+                .build();
+    }
+
+    /**
+     * Кэш кодов для групповых чатов - живут 240 минут (Код -> идентификатор чата)
+     */
+    @Bean
+    public Cache<String, Long> groupChatCodeCache() {
+        return Caffeine.newBuilder()
+                .expireAfterWrite(240, TimeUnit.MINUTES)
+                .maximumSize(10_000)
+                .build();
+    }
 }

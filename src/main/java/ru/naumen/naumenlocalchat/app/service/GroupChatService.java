@@ -36,7 +36,7 @@ public class GroupChatService {
      * @param groupChat чат
      * @throws InvalidChatException если участников менее трёх
      */
-    public void createGroupChat(GroupChat groupChat) throws InvalidChatException {
+    public void createGroupChat(GroupChat groupChat, Long adminId) throws InvalidChatException, EntityNotFoundException {
         if (groupChat.getMembers().size() < 3) {
             throw new InvalidChatException("Количество участников должно быть минимум 3!");
         }
@@ -45,6 +45,9 @@ public class GroupChatService {
             member.getChats().add(groupChat);
             userRepository.save(member);
         });
+
+        User admin = userService.getUserById(adminId);
+        groupChat.setAdmin(admin);
 
         groupChatRepository.save(groupChat);
         log.info("Создан групповой чат с id {}", groupChat.getId());

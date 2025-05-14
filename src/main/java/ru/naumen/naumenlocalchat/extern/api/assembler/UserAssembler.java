@@ -1,6 +1,7 @@
 package ru.naumen.naumenlocalchat.extern.api.assembler;
 
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
+import org.springframework.stereotype.Component;
 import ru.naumen.naumenlocalchat.domain.User;
 import ru.naumen.naumenlocalchat.extern.api.controller.UserController;
 import ru.naumen.naumenlocalchat.extern.api.dto.UserDTO;
@@ -10,6 +11,7 @@ import java.util.stream.Collectors;
 /**
  * Ассемблер пользователей
  */
+@Component
 public class UserAssembler extends RepresentationModelAssemblerSupport<User, UserDTO> {
 
     public UserAssembler() {

@@ -46,10 +46,6 @@ public class Chat {
         return members;
     }
 
-    public void setMembers(Set<User> members) {
-        this.members = members;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -58,11 +54,11 @@ public class Chat {
 
         Chat chat = (Chat) o;
 
-        return Objects.equals(id, chat.id) && Objects.equals(members, chat.members);
+        return Objects.equals(id, chat.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, members);
+        return Objects.hash(id);
     }
 }

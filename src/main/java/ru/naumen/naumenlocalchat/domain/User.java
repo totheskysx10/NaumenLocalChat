@@ -142,13 +142,12 @@ public class User {
                 && Objects.equals(password, user.password)
                 && Objects.equals(firstName, user.firstName)
                 && Objects.equals(lastName, user.lastName)
-                && Objects.equals(roles, user.roles)
-                && Objects.equals(chats, user.chats);
+                && Objects.equals(roles, user.roles);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, email, emailConfirmed, password, firstName, lastName, roles, chats);
+        return Objects.hash(id, email, emailConfirmed, password, firstName, lastName, roles);
     }
 
     /**

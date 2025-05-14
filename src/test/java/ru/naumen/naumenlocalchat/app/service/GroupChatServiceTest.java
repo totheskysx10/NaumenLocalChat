@@ -8,11 +8,10 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.naumenlocalchat.app.repository.GroupChatRepository;
 import ru.naumen.naumenlocalchat.app.repository.UserRepository;
+import ru.naumen.naumenlocalchat.domain.CodeType;
 import ru.naumen.naumenlocalchat.domain.GroupChat;
 import ru.naumen.naumenlocalchat.domain.User;
-import ru.naumen.naumenlocalchat.exception.BlacklistException;
-import ru.naumen.naumenlocalchat.exception.EntityNotFoundException;
-import ru.naumen.naumenlocalchat.exception.InvalidChatException;
+import ru.naumen.naumenlocalchat.exception.*;
 
 import java.util.*;
 
@@ -32,10 +31,13 @@ class GroupChatServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private CodeService codeService;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        groupChatService = new GroupChatService(groupChatRepository, userService, userRepository);
+        groupChatService = new GroupChatService(groupChatRepository, userService, userRepository, codeService);
     }
 
     /**
@@ -68,6 +70,47 @@ class GroupChatServiceTest {
         Exception e = Assertions.assertThrows(InvalidChatException.class, () -> groupChatService.createGroupChat(groupChat, 1L));
         Assertions.assertEquals("Количество участников должно быть минимум 3!", e.getMessage());
         Mockito.verify(groupChatRepository, Mockito.never()).save(Mockito.any());
+    }
+
+    /**
+     * Тест добавления пользователя в групповой чат по коду приглашения
+     */
+    @Test
+    void testInviteUserToChatByInvitationCode() throws EntityNotFoundException, InvalidCodeException, EntityDuplicateException {
+        User user1 = new User("user1@test.com", "pass1", "f1", "l1");
+        User user2 = new User("user2@test.com", "pass2", "f2", "l2");
+        User user3 = new User("user3@test.com", "pass3", "f3", "l3");
+        User user4 = new User("user4@test.com", "pass4", "f4", "l4");
+        GroupChat groupChat = new GroupChat(new HashSet<>(Set.of(user1, user2, user3)), "name");
+
+        Mockito.when(codeService.getIdByCode(CodeType.GROUP, "12345678")).thenReturn(1L);
+        Mockito.when(groupChatRepository.findById(1L)).thenReturn(Optional.of(groupChat));
+        Mockito.when(userService.getUserById(4L)).thenReturn(user4);
+
+        groupChatService.inviteUserToChatByInvitationCode("12345678", 4L);
+
+        Assertions.assertTrue(groupChat.getMembers().contains(user4));
+        Assertions.assertTrue(user4.getChats().contains(groupChat));
+    }
+
+    /**
+     * Тест добавления пользователя в групповой чат по коду приглашения, если пользователь уже в чате
+     */
+    @Test
+    void testInviteUserToChatByInvitationCodeIfUserInChat() throws EntityNotFoundException, InvalidCodeException {
+        User user1 = new User("user1@test.com", "pass1", "f1", "l1");
+        User user2 = new User("user2@test.com", "pass2", "f2", "l2");
+        User user3 = new User("user3@test.com", "pass3", "f3", "l3");
+        GroupChat groupChat = new GroupChat(new HashSet<>(Set.of(user1, user2, user3)), "name");
+
+        Mockito.when(codeService.getIdByCode(CodeType.GROUP, "12345678")).thenReturn(1L);
+        Mockito.when(groupChatRepository.findById(1L)).thenReturn(Optional.of(groupChat));
+        Mockito.when(userService.getUserById(3L)).thenReturn(user3);
+
+        Exception e = Assertions.assertThrows(EntityDuplicateException.class,
+                () -> groupChatService.inviteUserToChatByInvitationCode("12345678", 3L));
+
+        Assertions.assertEquals("Пользователь с id 3 уже есть в чате с id 1", e.getMessage());
     }
 
     /**
@@ -217,5 +260,61 @@ class GroupChatServiceTest {
         Exception e = Assertions.assertThrows(BlacklistException.class, () -> groupChatService.unblockUser(1L, 1L));
         Assertions.assertEquals("Пользователь 1 не был забанен в чате 1", e.getMessage());
         Mockito.verify(groupChatRepository, Mockito.never()).save(Mockito.any());
+    }
+
+    /**
+     * Тест выхода пользователя из группового чата
+     */
+    @Test
+    void testLeaveGroupChat() throws EntityNotFoundException, InvalidChatException {
+        User user = new User("user@test.com", "pass", "f", "l");
+        GroupChat groupChat = new GroupChat();
+        groupChat.getMembers().add(user);
+
+        Mockito.when(groupChatRepository.findById(1L)).thenReturn(Optional.of(groupChat));
+        Mockito.when(userService.getUserById(1L)).thenReturn(user);
+
+        groupChatService.leaveGroupChat(1L, 1L);
+
+        Assertions.assertFalse(groupChat.getMembers().contains(user));
+        Assertions.assertFalse(user.getChats().contains(groupChat));
+        Mockito.verify(groupChatRepository).delete(groupChat);
+    }
+
+    /**
+     * Тест выхода пользователя из группового чата, если участников ещё 3 или более
+     */
+    @Test
+    void testLeaveGroupChatThreeOrMoreMembers() throws EntityNotFoundException, InvalidChatException {
+        User user1 = new User("user1@test.com", "pass1", "f1", "l1");
+        User user2 = new User("user2@test.com", "pass2", "f2", "l2");
+        User user3 = new User("user3@test.com", "pass3", "f3", "l3");
+        User user4 = new User("user4@test.com", "pass4", "f4", "l4");
+        GroupChat groupChat = new GroupChat(new HashSet<>(Set.of(user1, user2, user3, user4)), "name");
+
+        Mockito.when(groupChatRepository.findById(1L)).thenReturn(Optional.of(groupChat));
+        Mockito.when(userService.getUserById(1L)).thenReturn(user1);
+
+        groupChatService.leaveGroupChat(1L, 1L);
+
+        Assertions.assertFalse(groupChat.getMembers().contains(user1));
+        Assertions.assertFalse(user1.getChats().contains(groupChat));
+        Mockito.verify(groupChatRepository, Mockito.never()).delete(Mockito.any(GroupChat.class));
+    }
+
+    /**
+     * Тест ошибки при выходе пользователя, не состоящего в чате
+     */
+    @Test
+    void testLeaveGroupChatWhenUserNotMember() throws EntityNotFoundException {
+        User user = new User("user@test.com", "pass", "f", "l");
+        GroupChat groupChat = new GroupChat();
+
+        Mockito.when(groupChatRepository.findById(1L)).thenReturn(Optional.of(groupChat));
+        Mockito.when(userService.getUserById(1L)).thenReturn(user);
+
+        Exception e = Assertions.assertThrows(InvalidChatException.class,
+                () -> groupChatService.leaveGroupChat(1L, 1L));
+        Assertions.assertEquals("Пользователь 1 не состоит в чате 1", e.getMessage());
     }
 }

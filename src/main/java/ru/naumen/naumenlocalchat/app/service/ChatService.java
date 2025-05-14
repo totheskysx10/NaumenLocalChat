@@ -6,13 +6,15 @@ import org.springframework.stereotype.Service;
 import ru.naumen.naumenlocalchat.app.repository.ChatRepository;
 import ru.naumen.naumenlocalchat.app.repository.UserRepository;
 import ru.naumen.naumenlocalchat.domain.Chat;
+import ru.naumen.naumenlocalchat.domain.CodeType;
 import ru.naumen.naumenlocalchat.domain.User;
 import ru.naumen.naumenlocalchat.exception.EntityDuplicateException;
 import ru.naumen.naumenlocalchat.exception.EntityNotFoundException;
-import ru.naumen.naumenlocalchat.exception.InvalidChatException;
+import ru.naumen.naumenlocalchat.exception.InvalidCodeException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Сервис чатов
@@ -23,6 +25,7 @@ public class ChatService {
     private final ChatRepository chatRepository;
     private final UserService userService;
     private final UserRepository userRepository;
+    private final CodeService codeService;
     private final Logger log = LoggerFactory.getLogger(ChatService.class);
 
     /**
@@ -30,23 +33,37 @@ public class ChatService {
      */
     private static final Integer CHAT_SIZE = 2;
 
-    public ChatService(ChatRepository chatRepository, UserService userService, UserRepository userRepository) {
+    public ChatService(ChatRepository chatRepository,
+                       UserService userService,
+                       UserRepository userRepository,
+                       CodeService codeService) {
         this.chatRepository = chatRepository;
         this.userService = userService;
         this.userRepository = userRepository;
+        this.codeService = codeService;
+    }
+
+    /**
+     * Создаёт чат по пригласительному коду
+     * @param invitationCode пригласительный код
+     * @param invitedUserId Id пользователя, который перешёл по коду (текущий id авторизации)
+     */
+    public void createChatByInvitationCode(String invitationCode, Long invitedUserId) throws InvalidCodeException, EntityNotFoundException, EntityDuplicateException {
+        Long initiatorId = codeService.getIdByCode(CodeType.BASIC, invitationCode);
+        User initiator = userService.getUserById(initiatorId);
+        User invitedUser = userService.getUserById(invitedUserId);
+        Set<User> members = Set.of(initiator, invitedUser);
+
+        Chat chat = new Chat(members);
+        createChat(chat);
     }
 
     /**
      * Создаёт новый чат
      * @param chat чат
      * @throws EntityDuplicateException если чат с такими участниками уже существует
-     * @throws InvalidChatException если участников не двое
      */
-    public void createChat(Chat chat) throws EntityDuplicateException, InvalidChatException {
-        if (CHAT_SIZE != chat.getMembers().size()) {
-            throw new InvalidChatException("Количество участников должно быть 2!");
-        }
-
+    private void createChat(Chat chat) throws EntityDuplicateException {
         if (chatRepository.existsByMembers(chat.getMembers(), CHAT_SIZE)) {
             throw new EntityDuplicateException("Чат с такими участниками уже существует!");
         }

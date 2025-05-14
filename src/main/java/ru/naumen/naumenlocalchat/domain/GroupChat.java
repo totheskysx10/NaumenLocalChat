@@ -75,13 +75,11 @@ public class GroupChat extends Chat {
 
         GroupChat groupChat = (GroupChat) o;
 
-        return Objects.equals(name, groupChat.name)
-                && Objects.equals(admin, groupChat.admin)
-                && Objects.equals(chatBlackList, groupChat.chatBlackList);
+        return Objects.equals(name, groupChat.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), name, admin, chatBlackList);
+        return Objects.hash(super.hashCode(), name);
     }
 }

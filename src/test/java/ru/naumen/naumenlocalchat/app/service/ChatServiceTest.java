@@ -9,10 +9,11 @@ import org.mockito.MockitoAnnotations;
 import ru.naumen.naumenlocalchat.app.repository.ChatRepository;
 import ru.naumen.naumenlocalchat.app.repository.UserRepository;
 import ru.naumen.naumenlocalchat.domain.Chat;
+import ru.naumen.naumenlocalchat.domain.CodeType;
 import ru.naumen.naumenlocalchat.domain.User;
 import ru.naumen.naumenlocalchat.exception.EntityDuplicateException;
 import ru.naumen.naumenlocalchat.exception.EntityNotFoundException;
-import ru.naumen.naumenlocalchat.exception.InvalidChatException;
+import ru.naumen.naumenlocalchat.exception.InvalidCodeException;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,55 +35,49 @@ class ChatServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private CodeService codeService;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        chatService = new ChatService(chatRepository, userService, userRepository);
+        chatService = new ChatService(chatRepository, userService, userRepository, codeService);
     }
 
     /**
      * Тест создания чата
      */
     @Test
-    void createChat() throws EntityDuplicateException, InvalidChatException {
+    void createChat() throws EntityDuplicateException, InvalidCodeException, EntityNotFoundException {
         User user1 = new User("test@test.com", "pass", "f", "l");
         User user2 = new User("test2@test.com", "pass2", "f2", "l2");
-        Chat chat = new Chat(Set.of(user1, user2));
 
-        chatService.createChat(chat);
+        Mockito.when(codeService.getIdByCode(CodeType.BASIC, "12345678")).thenReturn(2L);
+        Mockito.when(userService.getUserById(1L)).thenReturn(user1);
+        Mockito.when(userService.getUserById(2L)).thenReturn(user2);
 
-        Mockito.verify(chatRepository).save(chat);
-        Assertions.assertTrue(user1.getChats().contains(chat));
-        Assertions.assertTrue(user2.getChats().contains(chat));
-    }
+        chatService.createChatByInvitationCode("12345678", 1L);
 
-    /**
-     * Тест ошибки при создании чата с более чем 2 участниками
-     */
-    @Test
-    void createChatMoreThanTwoUsers() {
-        User user1 = new User("test@test.com", "pass", "f", "l");
-        User user2 = new User("test2@test.com", "pass2", "f2", "l2");
-        User user3 = new User("test3@test.com", "pass3", "f3", "l3");
-        Chat chat = new Chat(Set.of(user1, user2, user3));
-
-        Exception e = Assertions.assertThrows(InvalidChatException.class, () -> chatService.createChat(chat));
-        Assertions.assertEquals("Количество участников должно быть 2!", e.getMessage());
-        Mockito.verify(chatRepository, Mockito.never()).save(Mockito.any());
+        Mockito.verify(chatRepository).save(Mockito.argThat(chat -> chat.getMembers().contains(user1) && chat.getMembers().contains(user2)));
+        Assertions.assertEquals(1, user1.getChats().size());
+        Assertions.assertEquals(1, user2.getChats().size());
     }
 
     /**
      * Тест ошибки при создании дубликата чата
      */
     @Test
-    void createChatDuplicateUsers() {
+    void createChatDuplicateUsers() throws InvalidCodeException, EntityNotFoundException {
         User user1 = new User("test@test.com", "pass", "f", "l");
         User user2 = new User("test2@test.com", "pass2", "f2", "l2");
         Set<User> users = Set.of(user1, user2);
         Mockito.when(chatRepository.existsByMembers(users, 2)).thenReturn(true);
-        Chat chat = new Chat(Set.of(user1, user2));
 
-        Exception e = Assertions.assertThrows(EntityDuplicateException.class, () -> chatService.createChat(chat));
+        Mockito.when(codeService.getIdByCode(CodeType.BASIC, "12345678")).thenReturn(2L);
+        Mockito.when(userService.getUserById(1L)).thenReturn(user1);
+        Mockito.when(userService.getUserById(2L)).thenReturn(user2);
+
+        Exception e = Assertions.assertThrows(EntityDuplicateException.class, () -> chatService.createChatByInvitationCode("12345678", 1L));
         Assertions.assertEquals("Чат с такими участниками уже существует!", e.getMessage());
         Mockito.verify(chatRepository, Mockito.never()).save(Mockito.any());
     }

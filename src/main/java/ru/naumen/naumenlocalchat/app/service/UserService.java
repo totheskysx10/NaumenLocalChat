@@ -17,7 +17,7 @@ import ru.naumen.naumenlocalchat.domain.User;
 import ru.naumen.naumenlocalchat.exception.InvalidTokenException;
 import ru.naumen.naumenlocalchat.exception.EntityDuplicateException;
 import ru.naumen.naumenlocalchat.exception.EntityNotFoundException;
-import ru.naumen.naumenlocalchat.extern.infrastructure.EmailService;
+import ru.naumen.naumenlocalchat.extern.infrastructure.service.EmailService;
 
 import java.util.Collection;
 import java.util.List;

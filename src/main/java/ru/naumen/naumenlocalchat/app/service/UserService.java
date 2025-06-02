@@ -167,7 +167,6 @@ public class UserService implements UserDetailsService {
         } else {
             throw new UsernameNotFoundException("Пользователь с именем " + username + " не найден!");
         }
-
     }
 
     /**

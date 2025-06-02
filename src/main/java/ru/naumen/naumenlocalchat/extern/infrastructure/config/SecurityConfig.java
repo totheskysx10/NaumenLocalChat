@@ -2,6 +2,7 @@ package ru.naumen.naumenlocalchat.extern.infrastructure.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -9,6 +10,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import ru.naumen.naumenlocalchat.extern.infrastructure.service.SecurityContextService;
 
 /**
  * Конфигурация Spring Security
@@ -16,6 +18,12 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private final SecurityContextService securityContextService;
+
+    public SecurityConfig(SecurityContextService securityContextService) {
+        this.securityContextService = securityContextService;
+    }
 
     /**
      * Кодировщик паролей
@@ -36,6 +44,13 @@ public class SecurityConfig {
                 authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers("/login", "/users/register").anonymous()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").hasRole("ADMIN")
+                        .requestMatchers("/chats/user-chats", "/group-chats/user-chats", "/group-chats/found-user-chats")
+                        .access((authentication, context) -> {
+                            Long userId = Long.parseLong(context.getRequest().getParameter("userId"));
+                            return new AuthorizationDecision(securityContextService.isCurrentAuthId(userId));
+                        })
+                        .requestMatchers("/users/reset-password", "/users/request-reset-password",
+                                "/users/confirm-email", "/users/request-confirm-email").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(Customizer.withDefaults())

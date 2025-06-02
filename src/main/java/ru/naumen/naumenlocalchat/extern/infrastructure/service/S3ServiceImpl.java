@@ -3,6 +3,7 @@ package ru.naumen.naumenlocalchat.extern.infrastructure.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import ru.naumen.naumenlocalchat.app.service.S3Service;
 import ru.naumen.naumenlocalchat.exception.FileDuplicateException;
@@ -17,6 +18,7 @@ import java.io.IOException;
 /**
  * Реализация интерфейса S3 хранилища
  */
+@Component
 public class S3ServiceImpl implements S3Service {
 
     private final S3Client s3Client;

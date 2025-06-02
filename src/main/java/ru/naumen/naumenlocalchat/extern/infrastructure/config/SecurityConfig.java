@@ -35,6 +35,7 @@ public class SecurityConfig {
         http.
                 authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers("/login", "/users/register").anonymous()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(Customizer.withDefaults())

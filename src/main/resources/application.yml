@@ -27,3 +27,9 @@ app:
   url:
     confirm-email: https://localhost:5001/confirm-email/?{id}&token=
     reset-password: https://localhost:5001/reset-password?{id}&token=
+
+yandex:
+  cloud:
+    access: 123
+    secret: 123
+    bucket: 123

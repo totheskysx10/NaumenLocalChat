@@ -9,6 +9,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import ru.naumen.naumenlocalchat.extern.infrastructure.service.EmailService;
 
 /**
  * Тест сервиса Email

@@ -3,6 +3,11 @@ package ru.naumen.naumenlocalchat.app.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import ru.naumen.naumenlocalchat.app.repository.UserRepository;
 import ru.naumen.naumenlocalchat.domain.EmailData;
@@ -12,8 +17,9 @@ import ru.naumen.naumenlocalchat.domain.User;
 import ru.naumen.naumenlocalchat.exception.InvalidTokenException;
 import ru.naumen.naumenlocalchat.exception.EntityDuplicateException;
 import ru.naumen.naumenlocalchat.exception.EntityNotFoundException;
-import ru.naumen.naumenlocalchat.extern.infrastructure.EmailService;
+import ru.naumen.naumenlocalchat.extern.infrastructure.service.EmailService;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,14 +27,16 @@ import java.util.Optional;
  * Сервис пользователей
  */
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final TokenService tokenService;
     private final EmailService emailService;
+    private final Logger log = LoggerFactory.getLogger(UserService.class);
+
     private final String confirmEmailLinkTemplate;
     private final String resetPasswordLinkTemplate;
-    private final Logger log = LoggerFactory.getLogger(UserService.class);
+    private final String ROLE_PREFIX = "ROLE_";
 
     public UserService(UserRepository userRepository,
                        TokenService tokenService,
@@ -147,5 +155,27 @@ public class UserService {
         } else {
             throw new InvalidTokenException("Пароль пользователя с Id " + userId + " не обновлён!");
         }
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Optional<User> foundUser = userRepository.findByEmail(username);
+
+        if (foundUser.isPresent()) {
+            User user = foundUser.get();
+            return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), mapUserRoles(user.getRoles()));
+        } else {
+            throw new UsernameNotFoundException("Пользователь с именем " + username + " не найден!");
+        }
+    }
+
+    /**
+     * Маппит роли пользователя в SimpleGrantedAuthority
+     * @param roles роли
+     */
+    private Collection<? extends GrantedAuthority> mapUserRoles(List<Role> roles) {
+        return roles.stream()
+                .map(role -> new SimpleGrantedAuthority(ROLE_PREFIX + role))
+                .toList();
     }
 }

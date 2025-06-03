@@ -1,4 +1,4 @@
-package ru.naumen.naumenlocalchat.extern.infrastructure;
+package ru.naumen.naumenlocalchat.extern.infrastructure.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

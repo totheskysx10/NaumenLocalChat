@@ -55,7 +55,7 @@ public class CodeService {
      */
     private String generateCode(CodeType codeType, Long id) {
         try {
-            String input = codeType.toString() + ":" + id;
+            String input = codeType.toString() + "." + id + "." + System.currentTimeMillis();
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
 

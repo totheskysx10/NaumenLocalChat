@@ -1,12 +1,10 @@
 package ru.naumen.naumenlocalchat.extern.api.dto;
 
-import jakarta.validation.constraints.*;
-import org.springframework.hateoas.RepresentationModel;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
-public class RegisterDTO extends RepresentationModel<RegisterDTO> {
-
-    @Email
-    private String email;
+public class UserUpdatePasswordDTO {
 
     @NotBlank
     @Size(min = 8, message = "Не меньше 8 знаков")
@@ -22,29 +20,12 @@ public class RegisterDTO extends RepresentationModel<RegisterDTO> {
     @Pattern(regexp = ".*\\d.*", message = "Пароль должен содержать хотя бы одну цифру")
     private String passwordConfirm;
 
-    @NotBlank
-    private String firstName;
-
-    @NotBlank
-    private String lastName;
-
-    public RegisterDTO(String email, String password, String passwordConfirm, String firstName, String lastName) {
-        this.email = email;
+    public UserUpdatePasswordDTO(String password, String passwordConfirm) {
         this.password = password;
         this.passwordConfirm = passwordConfirm;
-        this.firstName = firstName;
-        this.lastName = lastName;
     }
 
-    public RegisterDTO() {
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
+    public UserUpdatePasswordDTO() {
     }
 
     public String getPassword() {
@@ -61,21 +42,5 @@ public class RegisterDTO extends RepresentationModel<RegisterDTO> {
 
     public void setPasswordConfirm(String passwordConfirm) {
         this.passwordConfirm = passwordConfirm;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
     }
 }

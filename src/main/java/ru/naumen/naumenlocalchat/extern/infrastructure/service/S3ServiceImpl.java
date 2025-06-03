@@ -63,21 +63,20 @@ public class S3ServiceImpl implements S3Service {
      * @return true, если файл существует, иначе false
      */
     private boolean doesFileExist(String key) {
+        HeadObjectRequest request = HeadObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
+
         try {
-            HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(key)
-                    .build();
-
-            s3Client.headObject(headObjectRequest);
-
+            s3Client.headObject(request);
             return true;
         } catch (S3Exception e) {
             if (e.statusCode() == 404) {
                 return false;
-            } else {
-                throw e;
             }
+
+            throw e;
         }
     }
 }

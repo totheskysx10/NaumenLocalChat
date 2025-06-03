@@ -36,12 +36,12 @@ public class CodeService {
     }
 
     /**
-     * Кладёт код приглашения в кэш
+     * Создаёт и кладёт код приглашения в кэш
      * @param codeType тип кода
      * @param id идентификатор сущности
      * @return код
      */
-    public String putCode(CodeType codeType, Long id) {
+    public String generateAndPutCode(CodeType codeType, Long id) {
         String code = generateCode(codeType, id);
         Cache<String, Long> cache = getCacheByCodeType(codeType);
         cache.put(code, id);

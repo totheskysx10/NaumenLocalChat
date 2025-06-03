@@ -43,8 +43,9 @@ public class SecurityConfig {
         http.
                 authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers("/login", "/users/register").anonymous()
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").hasRole("ADMIN")
-                        .requestMatchers("/chats/user-chats", "/group-chats/user-chats", "/group-chats/found-user-chats")
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/users/admin", "/users/no-admin").hasRole("ADMIN")
+                        .requestMatchers("/chats/user-chats", "/group-chats/user-chats", "/group-chats/found-user-chats",
+                                "/chats/invite-user", "/chats/create-chat", "/group-chats/enter", "/reports/generate", "/reports/user-reports")
                         .access((authentication, context) -> {
                             Long userId = Long.parseLong(context.getRequest().getParameter("userId"));
                             return new AuthorizationDecision(securityContextService.isCurrentAuthId(userId));

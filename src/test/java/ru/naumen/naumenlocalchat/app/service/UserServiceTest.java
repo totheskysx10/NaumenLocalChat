@@ -8,13 +8,15 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.naumenlocalchat.app.repository.UserRepository;
 import ru.naumen.naumenlocalchat.domain.*;
+import ru.naumen.naumenlocalchat.exception.AdminException;
 import ru.naumen.naumenlocalchat.exception.InvalidTokenException;
 import ru.naumen.naumenlocalchat.exception.EntityDuplicateException;
 import ru.naumen.naumenlocalchat.exception.EntityNotFoundException;
 import ru.naumen.naumenlocalchat.extern.infrastructure.service.EmailService;
 
-import java.util.List;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 
 /**
@@ -52,14 +54,16 @@ class UserServiceTest {
      * Тест создания пользователя
      */
     @Test
-    void testCreateUser() throws EntityDuplicateException {
+    void testCreateUser() throws EntityDuplicateException, EntityNotFoundException {
         User user = new User("test@test.com", "pass", "f", "l");
+        user.setId(1L);
         Mockito.when(userRepository.existsByEmail("test@test.com")).thenReturn(false);
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         userService.createUser(user);
 
         Mockito.verify(userRepository).save(user);
-        Assertions.assertEquals(List.of(Role.USER), user.getRoles());
+        Assertions.assertEquals(Set.of(Role.USER), user.getRoles());
         Assertions.assertTrue(user.getChats().isEmpty());
     }
 
@@ -210,5 +214,61 @@ class UserServiceTest {
 
         Exception e = Assertions.assertThrows(InvalidTokenException.class, () -> userService.resetPassword("token", 1L, "newPassword"));
         Assertions.assertEquals("Пароль пользователя с Id 1 не обновлён!", e.getMessage());
+    }
+
+    /**
+     * Тест выдачи админских прав
+     */
+    @Test
+    void testGiveAdminRules() throws AdminException, EntityNotFoundException {
+        User user = new User("test@test.com", "pass", "f", "l");
+        user.setRoles(new HashSet<>(Set.of(Role.USER)));
+
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        userService.giveAdminRules(1L);
+
+        Assertions.assertTrue(user.getRoles().contains(Role.ADMIN));
+    }
+
+    /**
+     * Тест ликвидации админских прав
+     */
+    @Test
+    void testRemoveAdminRules() throws AdminException, EntityNotFoundException {
+        User user = new User("test@test.com", "pass", "f", "l");
+        user.setRoles(new HashSet<>(Set.of(Role.USER, Role.ADMIN)));
+
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        userService.removeAdminRules(1L);
+
+        Assertions.assertFalse(user.getRoles().contains(Role.ADMIN));
+    }
+
+    /**
+     * Тест выдачи админских прав админу
+     */
+    @Test
+    void testGiveAdminRulesToAdmin() {
+        User user = new User("test@test.com", "pass", "f", "l");
+        user.setRoles(new HashSet<>(Set.of(Role.USER, Role.ADMIN)));
+
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        Exception e = Assertions.assertThrows(AdminException.class, () -> userService.giveAdminRules(1L));
+        Assertions.assertEquals("Пользователь 1 уже админ", e.getMessage());
+    }
+
+    /**
+     * Тест ликвидации админских прав не админа
+     */
+    @Test
+    void testRemoveAdminRulesFromNotAdmin() {
+        User user = new User("test@test.com", "pass", "f", "l");
+        user.setRoles(new HashSet<>(Set.of(Role.USER)));
+
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        Exception e = Assertions.assertThrows(AdminException.class, () -> userService.removeAdminRules(1L));
+        Assertions.assertEquals("Пользователь 1 уже не админ", e.getMessage());
     }
 }

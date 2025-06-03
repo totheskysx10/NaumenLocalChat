@@ -150,4 +150,15 @@ class ChatServiceTest {
         Assertions.assertFalse(user2.getChats().contains(chat));
         Mockito.verify(chatRepository).delete(chat);
     }
+
+    /**
+     * Тест создания кода приглашения в чат
+     */
+    @Test
+    void testInviteUser() {
+        Mockito.when(codeService.generateAndPutCode(CodeType.BASIC, 1L)).thenReturn("12345678");
+        String code = chatService.inviteUser(1L);
+
+        Assertions.assertEquals("12345678", code);
+    }
 }

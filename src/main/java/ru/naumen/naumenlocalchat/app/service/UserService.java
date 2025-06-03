@@ -14,14 +14,13 @@ import ru.naumen.naumenlocalchat.domain.EmailData;
 import ru.naumen.naumenlocalchat.domain.Role;
 import ru.naumen.naumenlocalchat.domain.TokenType;
 import ru.naumen.naumenlocalchat.domain.User;
+import ru.naumen.naumenlocalchat.exception.AdminException;
 import ru.naumen.naumenlocalchat.exception.InvalidTokenException;
 import ru.naumen.naumenlocalchat.exception.EntityDuplicateException;
 import ru.naumen.naumenlocalchat.exception.EntityNotFoundException;
 import ru.naumen.naumenlocalchat.extern.infrastructure.service.EmailService;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Сервис пользователей
@@ -55,15 +54,18 @@ public class UserService implements UserDetailsService {
      * @param user пользователь
      * @throws EntityDuplicateException если пользователь с email уже есть
      */
-    public void createUser(User user) throws EntityDuplicateException {
+    public User createUser(User user) throws EntityDuplicateException, EntityNotFoundException {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new EntityDuplicateException("Пользователь с Email " + user.getEmail() + " уже существует!");
         }
 
-        user.setRoles(List.of(Role.USER));
+        user.setRoles(Set.of(Role.USER));
 
         userRepository.save(user);
+        sendMessageForEmailConfirmation(user.getId());
         log.info("Создан пользователь с email {} и id {}", user.getEmail(), user.getId());
+
+        return user;
     }
 
     /**
@@ -157,6 +159,38 @@ public class UserService implements UserDetailsService {
         }
     }
 
+    /**
+     * Выдаёт пользователю права админа
+     * @param userId идентификатор пользователя
+     * @throws AdminException если пользователь уже админ
+     */
+    public void giveAdminRules(long userId) throws EntityNotFoundException, AdminException {
+        User user = getUserById(userId);
+
+        if (user.getRoles().contains(Role.ADMIN)) {
+            throw new AdminException("Пользователь " + userId + " уже админ");
+        }
+
+        user.getRoles().add(Role.ADMIN);
+        userRepository.save(user);
+    }
+
+    /**
+     * Забирает у пользователя права админа
+     * @param userId идентификатор пользователя
+     * @throws AdminException если пользователь уже не админ
+     */
+    public void removeAdminRules(long userId) throws EntityNotFoundException, AdminException {
+        User user = getUserById(userId);
+
+        if (!user.getRoles().contains(Role.ADMIN)) {
+            throw new AdminException("Пользователь " + userId + " уже не админ");
+        }
+
+        user.getRoles().remove(Role.ADMIN);
+        userRepository.save(user);
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> foundUser = userRepository.findByEmail(username);
@@ -173,7 +207,7 @@ public class UserService implements UserDetailsService {
      * Маппит роли пользователя в SimpleGrantedAuthority
      * @param roles роли
      */
-    private Collection<? extends GrantedAuthority> mapUserRoles(List<Role> roles) {
+    private Collection<? extends GrantedAuthority> mapUserRoles(Set<Role> roles) {
         return roles.stream()
                 .map(role -> new SimpleGrantedAuthority(ROLE_PREFIX + role))
                 .toList();

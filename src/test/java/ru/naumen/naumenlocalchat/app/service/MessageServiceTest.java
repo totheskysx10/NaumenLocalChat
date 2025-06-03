@@ -13,7 +13,7 @@ import ru.naumen.naumenlocalchat.domain.GroupChat;
 import ru.naumen.naumenlocalchat.domain.Message;
 import ru.naumen.naumenlocalchat.domain.User;
 import ru.naumen.naumenlocalchat.exception.EntityNotFoundException;
-import ru.naumen.naumenlocalchat.exception.InvalidChatException;
+import ru.naumen.naumenlocalchat.exception.ChatException;
 
 import java.util.HashSet;
 import java.util.List;
@@ -54,7 +54,7 @@ class MessageServiceTest {
      * Тест отправки сообщения в обычный чат
      */
     @Test
-    void testSendMessageToChat() throws EntityNotFoundException, InvalidChatException {
+    void testSendMessageToChat() throws EntityNotFoundException, ChatException {
         User user1 = new User("user1@test.com", "pass1", "f1", "l1");
         User user2 = new User("user2@test.com", "pass2", "f2", "l2");
         Chat chat = new Chat(Set.of(user1, user2));
@@ -74,7 +74,7 @@ class MessageServiceTest {
      * Тест отправки сообщения в групповой чат
      */
     @Test
-    void testSendMessageToGroupChat() throws EntityNotFoundException, InvalidChatException {
+    void testSendMessageToGroupChat() throws EntityNotFoundException, ChatException {
         User user1 = new User("user1@test.com", "pass1", "f1", "l1");
         User user2 = new User("user2@test.com", "pass2", "f2", "l2");
         User user3 = new User("user3@test.com", "pass3", "f3", "l3");
@@ -125,7 +125,7 @@ class MessageServiceTest {
         Mockito.when(groupChatService.findGroupChatById(2L)).thenReturn(groupChat);
         Mockito.when(messageRepository.save(message)).thenReturn(message);
 
-        Exception e = Assertions.assertThrows(InvalidChatException.class, () -> messageService.sendMessage(message, 2L));
+        Exception e = Assertions.assertThrows(ChatException.class, () -> messageService.sendMessage(message, 2L));
         Assertions.assertEquals("Пользователь 4 не в чате 2", e.getMessage());
         Mockito.verify(messageRepository, Mockito.never()).save(Mockito.any());
     }
@@ -174,7 +174,7 @@ class MessageServiceTest {
      * Тест удаления сообщения
      */
     @Test
-    void testDeleteMessage() throws EntityNotFoundException, InvalidChatException {
+    void testDeleteMessage() throws EntityNotFoundException, ChatException {
         User user1 = new User("user1@test.com", "pass1", "f1", "l1");
         User user2 = new User("user2@test.com", "pass2", "f2", "l2");
         User user3 = new User("user3@test.com", "pass3", "f3", "l3");
@@ -229,7 +229,7 @@ class MessageServiceTest {
         Mockito.when(messageRepository.existsById(1L)).thenReturn(true);
         Mockito.when(groupChatService.findGroupChatById(1L)).thenReturn(groupChat);
 
-        Exception e = Assertions.assertThrows(InvalidChatException.class, () -> messageService.deleteMessage(1L, 1L, 1L));
+        Exception e = Assertions.assertThrows(ChatException.class, () -> messageService.deleteMessage(1L, 1L, 1L));
         Assertions.assertEquals("Пользователь 1 не админ в чате 1", e.getMessage());
         Mockito.verify(messageRepository, Mockito.never()).deleteById(Mockito.any());
     }

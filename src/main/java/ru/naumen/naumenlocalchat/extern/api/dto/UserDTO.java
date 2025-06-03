@@ -6,11 +6,11 @@ import java.util.List;
 
 public class UserDTO extends RepresentationModel<UserDTO> {
 
-    public Long id;
-    public String email;
-    public String firstName;
-    public String lastName;
-    public List<String> roles;
+    private Long id;
+    private String email;
+    private String firstName;
+    private String lastName;
+    private List<String> roles;
 
     public UserDTO(Long id, String email, String firstName, String lastName, List<String> roles) {
         this.id = id;

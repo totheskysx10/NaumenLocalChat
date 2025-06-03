@@ -38,11 +38,11 @@ public class GroupChatService {
     /**
      * Создаёт новый групповой чат
      * @param groupChat чат
-     * @throws InvalidChatException если участников менее трёх
+     * @throws ChatException если участников менее трёх
      */
-    public void createGroupChat(GroupChat groupChat, Long adminId) throws InvalidChatException, EntityNotFoundException {
+    public void createGroupChat(GroupChat groupChat, Long adminId) throws ChatException, EntityNotFoundException {
         if (groupChat.getMembers().size() < 3) {
-            throw new InvalidChatException("Количество участников должно быть минимум 3!");
+            throw new ChatException("Количество участников должно быть минимум 3!");
         }
 
         groupChat.getMembers().forEach(member -> {
@@ -63,7 +63,7 @@ public class GroupChatService {
      * @param invitedUserId Id пользователя, который перешёл по коду (текущий id авторизации)
      * @throws EntityDuplicateException если пользователь уже есть в чате
      */
-    public void inviteUserToChatByInvitationCode(String invitationCode, Long invitedUserId) throws InvalidCodeException, EntityNotFoundException, EntityDuplicateException {
+    public void EnterToChatByInvitationCode(String invitationCode, Long invitedUserId) throws InvalidCodeException, EntityNotFoundException, EntityDuplicateException {
         Long groupChatId = codeService.getIdByCode(CodeType.GROUP, invitationCode);
         GroupChat groupChat = findGroupChatById(groupChatId);
         User invitedUser = userService.getUserById(invitedUserId);
@@ -83,18 +83,18 @@ public class GroupChatService {
      * @param groupChatId идентификатор чата
      * @param userId идентификатор пользователя
      * @throws EntityNotFoundException если чат или пользователь не найден
-     * @throws InvalidChatException если пользователь не является участником чата
+     * @throws ChatException если пользователь не является участником чата
      */
-    public void leaveGroupChat(Long groupChatId, Long userId) throws EntityNotFoundException, InvalidChatException {
+    public void leaveGroupChat(Long groupChatId, Long userId) throws EntityNotFoundException, ChatException {
         GroupChat groupChat = findGroupChatById(groupChatId);
         User user = userService.getUserById(userId);
 
         if (!groupChat.getMembers().contains(user)) {
-            throw new InvalidChatException("Пользователь " + userId + " не состоит в чате " + groupChatId);
+            throw new ChatException("Пользователь " + userId + " не состоит в чате " + groupChatId);
         }
 
         if (user.equals(groupChat.getAdmin())) {
-            throw new InvalidChatException("Пользователь " + userId + " админ в чате " + groupChatId);
+            throw new ChatException("Пользователь " + userId + " админ в чате " + groupChatId);
         }
 
         groupChat.getMembers().remove(user);
@@ -193,5 +193,14 @@ public class GroupChatService {
         } else {
             throw new BlacklistException("Пользователь " + userId + " не был забанен в чате " + groupChatId);
         }
+    }
+
+    /**
+     * Генерирует код приглашения в групповой чат
+     * @param chatId id чата, в который приглашают
+     * @return код приглашения
+     */
+    public String inviteUser(Long chatId) {
+        return codeService.generateAndPutCode(CodeType.GROUP, chatId);
     }
 }

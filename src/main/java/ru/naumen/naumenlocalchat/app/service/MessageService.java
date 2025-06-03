@@ -7,7 +7,7 @@ import ru.naumen.naumenlocalchat.domain.Chat;
 import ru.naumen.naumenlocalchat.domain.GroupChat;
 import ru.naumen.naumenlocalchat.domain.Message;
 import ru.naumen.naumenlocalchat.exception.EntityNotFoundException;
-import ru.naumen.naumenlocalchat.exception.InvalidChatException;
+import ru.naumen.naumenlocalchat.exception.ChatException;
 
 import java.util.List;
 import java.util.Map;
@@ -39,11 +39,11 @@ public class MessageService {
      * @param chatId идентификатор чата
      * @throws EntityNotFoundException если не найден чат
      */
-    public void sendMessage(Message message, Long chatId) throws EntityNotFoundException, InvalidChatException {
+    public void sendMessage(Message message, Long chatId) throws EntityNotFoundException, ChatException {
         Chat chat = findChatOrGroupChatById(chatId);
 
         if (!chat.getMembers().contains(message.getSender())) {
-            throw new InvalidChatException("Пользователь " + message.getSender().getId() + " не в чате " + chatId);
+            throw new ChatException("Пользователь " + message.getSender().getId() + " не в чате " + chatId);
         }
 
         message.setChat(chat);
@@ -53,7 +53,7 @@ public class MessageService {
     }
 
     /**
-     * Ищет сообщения в чате
+     * Ищет сообщения чата
      * @param chatId идентификатор чата
      */
     public List<Message> findChatMessages(Long chatId) {
@@ -92,9 +92,9 @@ public class MessageService {
      * @param groupChatId id группового чата
      * @param userId id админа чата
      * @throws EntityNotFoundException если сообщение не найдено
-     * @throws InvalidChatException если пользователь не в чате
+     * @throws ChatException если пользователь не в чате
      */
-    public void deleteMessage(Long messageId, Long groupChatId, Long userId) throws EntityNotFoundException, InvalidChatException {
+    public void deleteMessage(Long messageId, Long groupChatId, Long userId) throws EntityNotFoundException, ChatException {
         if (!messageRepository.existsById(messageId)) {
             throw new EntityNotFoundException("Сообщение с id " + messageId + " не найдено");
         }
@@ -102,7 +102,7 @@ public class MessageService {
         GroupChat groupChat = groupChatService.findGroupChatById(groupChatId);
 
         if (!userId.equals(groupChat.getAdmin().getId())) {
-            throw new InvalidChatException("Пользователь " + userId + " не админ в чате " + groupChatId);
+            throw new ChatException("Пользователь " + userId + " не админ в чате " + groupChatId);
         }
 
         messageRepository.deleteById(messageId);

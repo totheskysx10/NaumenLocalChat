@@ -162,7 +162,7 @@ public class ReportService {
         );
 
         String link = s3Service.uploadFile(multipartFile, userId.toString());
-        Files.deleteIfExists(Paths.get(zipName));
+        Files.deleteIfExists(zipPath);
         return link;
     }
 }

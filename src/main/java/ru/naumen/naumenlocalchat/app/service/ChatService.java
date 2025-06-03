@@ -111,4 +111,13 @@ public class ChatService {
         chatRepository.delete(chat);
         log.info("Удалён чат с id {}", chat.getId());
     }
+
+    /**
+     * Генерирует код приглашения в чат
+     * @param userId id пользователя, который приглашает
+     * @return код приглашения
+     */
+    public String inviteUser(Long userId) {
+        return codeService.generateAndPutCode(CodeType.BASIC, userId);
+    }
 }

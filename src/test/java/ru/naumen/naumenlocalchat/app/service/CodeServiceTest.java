@@ -33,10 +33,10 @@ class CodeServiceTest {
      * Тест добавления кода в кэш
      */
     @Test
-    void testPutCode() {
+    void testGenerateAndPutCode() {
         Mockito.when(groupChatCodeCache.getIfPresent("40635474")).thenReturn(null);
 
-        String code = codeService.putCode(CodeType.GROUP, 2L);
+        String code = codeService.generateAndPutCode(CodeType.GROUP, 2L);
 
         Assertions.assertNotNull(code);
         Mockito.verify(groupChatCodeCache).put(code, 2L);
@@ -83,9 +83,9 @@ class CodeServiceTest {
      */
     @Test
     void testGenerateDifferentCodesForDifferentInputs() {
-        String code1 = codeService.putCode(CodeType.BASIC, 1L);
-        String code2 = codeService.putCode(CodeType.GROUP, 1L);
-        String code3 = codeService.putCode(CodeType.BASIC, 2L);
+        String code1 = codeService.generateAndPutCode(CodeType.BASIC, 1L);
+        String code2 = codeService.generateAndPutCode(CodeType.GROUP, 1L);
+        String code3 = codeService.generateAndPutCode(CodeType.BASIC, 2L);
 
         Assertions.assertNotEquals(code1, code2);
         Assertions.assertNotEquals(code1, code3);
@@ -97,8 +97,8 @@ class CodeServiceTest {
      */
     @Test
     void testGenerateSameCodesForSameInputs() {
-        String code1 = codeService.putCode(CodeType.BASIC, 1L);
-        String code2 = codeService.putCode(CodeType.BASIC, 1L);
+        String code1 = codeService.generateAndPutCode(CodeType.BASIC, 1L);
+        String code2 = codeService.generateAndPutCode(CodeType.BASIC, 1L);
 
         Assertions.assertEquals(code1, code2);
     }

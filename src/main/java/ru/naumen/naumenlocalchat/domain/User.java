@@ -2,10 +2,7 @@ package ru.naumen.naumenlocalchat.domain;
 
 import jakarta.persistence.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Пользователь
@@ -55,7 +52,7 @@ public class User {
      * Роли
      */
     @ElementCollection(fetch = FetchType.EAGER)
-    private List<Role> roles;
+    private Set<Role> roles;
 
     /**
      * Чаты пользователя
@@ -72,7 +69,7 @@ public class User {
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.roles = new ArrayList<>();
+        this.roles = new HashSet<>();
         this.chats = new ArrayList<>();
     }
 
@@ -99,11 +96,11 @@ public class User {
         this.password = password;
     }
 
-    public List<Role> getRoles() {
+    public Set<Role> getRoles() {
         return roles;
     }
 
-    public void setRoles(List<Role> roles) {
+    public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
 

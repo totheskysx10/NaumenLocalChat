@@ -42,6 +42,10 @@ public class Chat {
         return id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public Set<User> getMembers() {
         return members;
     }

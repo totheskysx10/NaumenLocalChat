@@ -93,6 +93,10 @@ public class GroupChatService {
             throw new InvalidChatException("Пользователь " + userId + " не состоит в чате " + groupChatId);
         }
 
+        if (user.equals(groupChat.getAdmin())) {
+            throw new InvalidChatException("Пользователь " + userId + " админ в чате " + groupChatId);
+        }
+
         groupChat.getMembers().remove(user);
         user.getChats().remove(groupChat);
 

@@ -50,6 +50,8 @@ public class CodeService {
 
     /**
      * Генерирует уникальный 8-значный числовой код из хэша
+     * @param codeType тип кода
+     * @param id ID сущности
      */
     private String generateCode(CodeType codeType, Long id) {
         try {

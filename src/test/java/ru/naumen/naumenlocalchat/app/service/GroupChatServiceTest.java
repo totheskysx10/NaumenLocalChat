@@ -317,4 +317,25 @@ class GroupChatServiceTest {
                 () -> groupChatService.leaveGroupChat(1L, 1L));
         Assertions.assertEquals("Пользователь 1 не состоит в чате 1", e.getMessage());
     }
+
+    /**
+     * Тест ошибки при выходе админа
+     */
+    @Test
+    void testLeaveGroupChatAdmin() throws EntityNotFoundException, InvalidChatException {
+        User user1 = new User("user1@test.com", "pass1", "f1", "l1");
+        User user2 = new User("user2@test.com", "pass2", "f2", "l2");
+        User user3 = new User("user3@test.com", "pass3", "f3", "l3");
+        User user4 = new User("user4@test.com", "pass4", "f4", "l4");
+        GroupChat groupChat = new GroupChat(new HashSet<>(Set.of(user1, user2, user3, user4)), "name");
+        groupChat.setAdmin(user4);
+
+        Mockito.when(groupChatRepository.findById(1L)).thenReturn(Optional.of(groupChat));
+        Mockito.when(userService.getUserById(1L)).thenReturn(user1);
+        Mockito.when(userService.getUserById(4L)).thenReturn(user4);
+
+        Exception e = Assertions.assertThrows(InvalidChatException.class,
+                () -> groupChatService.leaveGroupChat(1L, 4L));
+        Assertions.assertEquals("Пользователь 4 админ в чате 1", e.getMessage());
+    }
 }

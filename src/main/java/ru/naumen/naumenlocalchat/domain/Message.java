@@ -1,6 +1,8 @@
 package ru.naumen.naumenlocalchat.domain;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
+import ru.naumen.naumenlocalchat.app.serializer.UserIdSerializer;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -22,8 +24,9 @@ public class Message {
     /**
      * Отправитель
      */
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "sender_id", nullable = false)
+    @JsonSerialize(using = UserIdSerializer.class)
     private User sender;
 
     /**

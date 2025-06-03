@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import ru.naumen.naumenlocalchat.app.repository.ReportRepository;
 import ru.naumen.naumenlocalchat.domain.*;
 import ru.naumen.naumenlocalchat.exception.EntityNotFoundException;
@@ -11,6 +12,7 @@ import ru.naumen.naumenlocalchat.exception.ReportException;
 
 import java.io.FileOutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -132,14 +134,13 @@ public class ReportService {
      */
     private String createZip(Long userId) throws Exception {
         User user = userService.getUserById(userId);
-        List<Chat> chats = user.getChats();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
-        String timestamp = LocalDateTime.now().format(formatter);
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         String zipName = String.format(ZIP_NAME_TEMPLATE, userId, timestamp);
+        Path zipPath = Paths.get(zipName);
 
         try (FileOutputStream fos = new FileOutputStream(zipName);
         ZipOutputStream zos = new ZipOutputStream(fos)) {
-            for (Chat chat : chats) {
+            for (Chat chat : user.getChats()) {
                 Long chatId = chat.getId();
                 List<Message> messages = messageService.findChatMessages(chatId);
 
@@ -153,7 +154,14 @@ public class ReportService {
             }
         }
 
-        String link = s3Service.uploadToS3(zipName);
+        byte[] zipBytes = Files.readAllBytes(zipPath);
+        MultipartFile multipartFile = new CustomMultipartFile(
+                zipPath.getFileName().toString(),
+                zipBytes,
+                "application/zip"
+        );
+
+        String link = s3Service.uploadFile(multipartFile, userId.toString());
         Files.deleteIfExists(Paths.get(zipName));
         return link;
     }

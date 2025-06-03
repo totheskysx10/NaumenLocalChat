@@ -6,11 +6,14 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.mock.web.MockMultipartFile;
 import ru.naumen.naumenlocalchat.app.repository.ReportRepository;
 import ru.naumen.naumenlocalchat.domain.*;
 import ru.naumen.naumenlocalchat.exception.EntityNotFoundException;
+import ru.naumen.naumenlocalchat.exception.FileDuplicateException;
 import ru.naumen.naumenlocalchat.exception.ReportException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -112,7 +115,7 @@ class ReportServiceTest {
      * Тест генерации отчёта
      */
     @Test
-    void generateReport() throws EntityNotFoundException, InterruptedException, ReportException {
+    void generateReport() throws EntityNotFoundException, InterruptedException, ReportException, FileDuplicateException, IOException {
         User user = new User("user1@test.com", "pass1", "f1", "l1");
         user.setId(1L);
         Chat chat1 = new Chat();
@@ -129,7 +132,7 @@ class ReportServiceTest {
             return report;
         });
         Mockito.when(messageService.findChatMessages(1L)).thenReturn(new ArrayList<>(List.of(message)));
-        Mockito.when(s3Service.uploadToS3(Mockito.anyString())).thenReturn("link");
+        Mockito.when(s3Service.uploadFile(Mockito.any(CustomMultipartFile.class), Mockito.anyString())).thenReturn("link");
         Mockito.when(reportRepository.findById(1L)).thenReturn(Optional.of(reportToSave));
 
         reportService.createReport(1L);

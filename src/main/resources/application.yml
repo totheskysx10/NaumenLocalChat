@@ -1,0 +1,37 @@
+server:
+  port: 5001
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/nauchat
+    username: postgres
+    password: 1
+  jpa:
+    hibernate:
+      ddl-auto: update
+  mail:
+    host: smtp.mail.ru
+    port: 587
+    username: 123
+    password: 123
+    properties:
+      mail:
+        transport:
+          protocol: smtp
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  autoconfigure:
+    exclude: io.awspring.cloud.autoconfigure.s3.S3AutoConfiguration
+
+app:
+  url:
+    confirm-email: https://localhost:5001/confirm-email/?{id}&token=
+    reset-password: https://localhost:5001/reset-password?{id}&token=
+
+yandex:
+  cloud:
+    access: 123
+    secret: 123
+    bucket: 123

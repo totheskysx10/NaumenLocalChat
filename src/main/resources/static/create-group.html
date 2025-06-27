@@ -39,24 +39,20 @@
             .map(id => parseInt(id.trim()))
             .filter(id => !isNaN(id));
 
-        try {
-            const response = await fetch('/group-chats?adminId=' + encodeURIComponent(adminId), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: chatName,
-                    memberIds: memberIds
-                })
-            });
+        const response = await fetch('/group-chats?adminId=' + encodeURIComponent(adminId), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: chatName,
+                memberIds: memberIds
+            })
+        });
 
-            if (response.ok) {
-                responseBox.innerHTML = `✅ Групповой чат создан`;
-            } else {
-                const error = await response.text();
-                responseBox.innerHTML = `❌ Ошибка: ${error}`;
-            }
-        } catch (e) {
-            responseBox.innerHTML = `❌ Ошибка подключения к серверу`;
+        if (response.ok) {
+            responseBox.innerHTML = `Групповой чат создан`;
+        } else {
+            const error = await response.text();
+            responseBox.innerHTML = `Ошибка: ${error}`;
         }
     }
 </script>

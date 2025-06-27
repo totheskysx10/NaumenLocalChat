@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <title>Чат</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <style>
+        #chat-container { max-width: 600px; margin: 20px auto; border: 1px solid #ddd; border-radius: 8px; padding: 1rem; background: #fff; display: flex; flex-direction: column; height: 80vh; }
+        #messages { flex-grow: 1; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; background: #f9f9f9; }
+        #messages div { margin-bottom: 8px; }
+        #chat-id-input, #user-id-input { width: 180px; padding: 8px; margin-right: 10px; }
+        #message-input { flex-grow: 1; padding: 8px; }
+        #send-button { padding: 8px 16px; margin-left: 10px; }
+        #enter-chat-section { text-align: center; margin: 20px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div id="enter-chat-section">
+        <h2>Войти в чат</h2>
+        <input type="number" id="chat-id-input" placeholder="ID чата" />
+        <button id="enter-chat-btn">Войти</button>
+    </div>
+
+    <div id="chat-container" style="display:none;">
+        <h2>Чат ID: <span id="current-chat-id"></span></h2>
+        <div id="messages"></div>
+        <div style="display:flex;">
+            <input type="text" id="message-input" placeholder="Введите сообщение..." />
+            <button id="send-button">Отправить</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+<script>
+    let stompClient = null;
+    let currentChatId = null;
+    let currentUserId = null;
+
+    document.getElementById("enter-chat-btn").onclick = async function () {
+        const chatId = document.getElementById("chat-id-input").value.trim();
+
+        try {
+            const res = await fetch('/users/current-auth-id');
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            currentUserId = data.userId;
+        } catch {
+            alert("Не удалось получить ID пользователя");
+            return;
+        }
+
+        if (!chatId || !currentUserId) {
+            alert("Введите ID чата");
+            return;
+        }
+
+        const inChat = await checkUserInChat(chatId, currentUserId);
+        if (!inChat) {
+            alert("Вы не состоите в этом чате. История сообщений недоступна.");
+            return;
+        }
+
+        currentChatId = chatId;
+        document.getElementById("current-chat-id").textContent = currentChatId;
+        document.getElementById("enter-chat-section").style.display = "none";
+        document.getElementById("chat-container").style.display = "flex";
+
+        try {
+            const response = await fetch(`/messages/chat?chatId=${currentChatId}`);
+            if (response.status === 204) {
+                document.getElementById("messages").innerHTML = "<i>Нет сообщений</i>";
+            } else if (response.ok) {
+                const messages = await response.json();
+                renderMessages(messages);
+            } else {
+                alert("Ошибка при загрузке сообщений");
+            }
+        } catch (e) {
+            alert("Ошибка подключения к серверу");
+        }
+
+        connectWebSocket();
+    };
+
+
+    function renderMessages(messages) {
+        const messagesDiv = document.getElementById("messages");
+        messagesDiv.innerHTML = "";
+        messages.forEach(m => {
+            const el = document.createElement("div");
+            el.innerHTML = `<strong>${escapeHtml(m.senderName || ("user#" + m.senderId))}</strong>: ${escapeHtml(m.content)}`;
+            messagesDiv.appendChild(el);
+        });
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    async function checkUserInChat(chatId, userId) {
+        try {
+            const chatRes = await fetch(`/chats?chatId=${chatId}`);
+            if (!chatRes.ok) return false;
+            const chatData = await chatRes.json();
+            return chatData.memberIds && chatData.memberIds.includes(userId);
+        } catch (e) {
+            return false;
+        }
+    }
+
+
+    function connectWebSocket() {
+        if (stompClient) {
+            stompClient.disconnect();
+        }
+
+        const socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function () {
+            stompClient.subscribe(`/topic/chat/${currentChatId}`, function (message) {
+                const msg = JSON.parse(message.body);
+                if (msg.message.chatId == currentChatId) {
+                    addMessage(msg.message);
+                }
+            });
+        });
+    }
+
+    function addMessage(message) {
+        const messagesDiv = document.getElementById("messages");
+        const el = document.createElement("div");
+        el.innerHTML = `<strong>${escapeHtml(message.senderName || ("user#" + message.senderId))}</strong>: ${escapeHtml(message.content)}`;
+        messagesDiv.appendChild(el);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    document.getElementById("send-button").onclick = function () {
+        const input = document.getElementById("message-input");
+        const content = input.value.trim();
+        if (!content) return;
+
+        const message = {
+            senderId: Number(currentUserId),
+            content: content,
+            chatId: Number(currentChatId)
+        };
+
+        if (!stompClient || !stompClient.connected) {
+            alert("WebSocket не подключен");
+            return;
+        }
+
+        stompClient.send(
+            "/app/chat.sendMessage",
+            {
+                chatId: String(currentChatId),
+                userId: String(currentUserId)
+            },
+            JSON.stringify(message)
+        );
+
+        input.value = "";
+    };
+
+    function escapeHtml(text) {
+        return text.replace(/[&<>"']/g, function (m) {
+            return {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[m];
+        });
+    }
+</script>
+</body>
+</html>

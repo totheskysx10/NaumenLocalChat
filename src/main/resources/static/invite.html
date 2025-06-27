@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Приглашение в чат</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="container">
+    <h2>Приглашение в чат</h2>
+
+    <h3>Получить код приглашения</h3>
+    <form id="generate-code-form">
+        <select id="invite-type">
+            <option value="private">Обычный чат</option>
+            <option value="group">Групповой чат</option>
+        </select>
+        <input type="number" id="chat-id" placeholder="ID пользователя или чата" required>
+        <button type="submit">Сгенерировать код</button>
+    </form>
+    <div id="invite-code"></div>
+
+    <hr>
+
+    <h3>Войти по коду</h3>
+    <form id="enter-code-form">
+        <select id="enter-type">
+            <option value="private">Обычный чат</option>
+            <option value="group">Групповой чат</option>
+        </select>
+        <input type="text" id="invitation-code" placeholder="Код приглашения" required>
+        <button type="submit">Войти</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById("generate-code-form").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const type = document.getElementById("invite-type").value;
+        const id = document.getElementById("chat-id").value;
+        const url = type === "private" ? `/chats/invite-user` : `/group-chats/invite-user?chatId=${id}`;
+
+        const res = await fetch(url, { method: "POST", credentials: "include" });
+
+        if (res.ok) {
+            const data = await res.json();
+            document.getElementById("invite-code").innerText = "Код: " + data.code;
+        } else {
+            const errText = await res.text();
+            console.error("Ошибка от сервера:", errText);
+            alert("Ошибка при генерации кода " + errText);
+        }
+
+    });
+
+    document.getElementById("enter-code-form").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const type = document.getElementById("enter-type").value;
+        const code = document.getElementById("invitation-code").value;
+        const url = type === "private"
+            ? `/chats/create-chat?invitationCode=${code}`
+            : `/group-chats/enter?invitationCode=${code}`;
+
+        const res = await fetch(url, { method: "POST" });
+        if (res.ok) {
+            alert("Вы успешно присоединились к чату");
+        } else {
+            const errText = await res.text();
+            console.error("Ошибка от сервера:", errText);
+            alert("Ошибка: возможно, код неверный или вы уже в чате");
+        }
+    });
+</script>
+</body>
+</html>

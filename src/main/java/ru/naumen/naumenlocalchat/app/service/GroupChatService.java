@@ -63,7 +63,7 @@ public class GroupChatService {
      * @param invitedUserId Id пользователя, который перешёл по коду (текущий id авторизации)
      * @throws EntityDuplicateException если пользователь уже есть в чате
      */
-    public void EnterToChatByInvitationCode(String invitationCode, Long invitedUserId) throws InvalidCodeException, EntityNotFoundException, EntityDuplicateException {
+    public void enterToChatByInvitationCode(String invitationCode, Long invitedUserId) throws InvalidCodeException, EntityNotFoundException, EntityDuplicateException {
         Long groupChatId = codeService.getIdByCode(CodeType.GROUP, invitationCode);
         GroupChat groupChat = findGroupChatById(groupChatId);
         User invitedUser = userService.getUserById(invitedUserId);
@@ -100,12 +100,16 @@ public class GroupChatService {
         groupChat.getMembers().remove(user);
         user.getChats().remove(groupChat);
 
+        userRepository.save(user);
+
         if (groupChat.getMembers().size() < 3) {
             deleteGroupChatById(groupChatId);
+            log.info("Чат {} удалён, так как осталось меньше 3 участников", groupChatId);
+            return;
+        } else {
+            groupChatRepository.save(groupChat);
         }
 
-        groupChatRepository.save(groupChat);
-        userRepository.save(user);
         log.info("Пользователь {} вышел из чата {}", userId, groupChatId);
     }
 

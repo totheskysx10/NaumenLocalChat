@@ -5,12 +5,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import ru.naumen.naumenlocalchat.app.service.ChatService;
 import ru.naumen.naumenlocalchat.domain.Chat;
+import ru.naumen.naumenlocalchat.exception.AuthException;
 import ru.naumen.naumenlocalchat.exception.EntityDuplicateException;
 import ru.naumen.naumenlocalchat.exception.EntityNotFoundException;
 import ru.naumen.naumenlocalchat.exception.InvalidCodeException;
 import ru.naumen.naumenlocalchat.extern.api.assembler.ChatAssembler;
 import ru.naumen.naumenlocalchat.extern.api.dto.ChatDTO;
 import ru.naumen.naumenlocalchat.extern.api.dto.CodeDTO;
+import ru.naumen.naumenlocalchat.extern.infrastructure.service.SecurityContextService;
 
 import java.util.List;
 
@@ -20,15 +22,17 @@ public class ChatController {
 
     private final ChatService chatService;
     private final ChatAssembler chatAssembler;
+    private final SecurityContextService securityContextService;
 
-    public ChatController(ChatService chatService, ChatAssembler chatAssembler) {
+    public ChatController(ChatService chatService, ChatAssembler chatAssembler, SecurityContextService securityContextService) {
         this.chatService = chatService;
         this.chatAssembler = chatAssembler;
+        this.securityContextService = securityContextService;
     }
 
     @PostMapping("/create-chat")
-    public ResponseEntity<Void> createChatByInvitationCode(@RequestParam String invitationCode, @RequestParam Long userId) throws EntityDuplicateException, EntityNotFoundException, InvalidCodeException {
-        chatService.createChatByInvitationCode(invitationCode, userId);
+    public ResponseEntity<Void> createChatByInvitationCode(@RequestParam String invitationCode) throws EntityDuplicateException, EntityNotFoundException, InvalidCodeException, AuthException {
+        chatService.createChatByInvitationCode(invitationCode, securityContextService.getCurrentAuthId());
         return ResponseEntity.ok().build();
     }
 
@@ -39,8 +43,8 @@ public class ChatController {
     }
 
     @GetMapping("/user-chats")
-    public ResponseEntity<List<ChatDTO>> findUserChats(@RequestParam Long userId) throws EntityNotFoundException {
-        List<ChatDTO> chats = chatService.findUserChats(userId).stream()
+    public ResponseEntity<List<ChatDTO>> findCurrentUserChats() throws EntityNotFoundException, AuthException {
+        List<ChatDTO> chats = chatService.findUserChats(securityContextService.getCurrentAuthId()).stream()
                 .map(chatAssembler::toModel)
                 .toList();
 
@@ -59,8 +63,8 @@ public class ChatController {
     }
 
     @PostMapping("/invite-user")
-    public ResponseEntity<CodeDTO> inviteUser(@RequestParam Long userId) {
-        String code = chatService.inviteUser(userId);
+    public ResponseEntity<CodeDTO> inviteUser() throws AuthException {
+        String code = chatService.inviteUser(securityContextService.getCurrentAuthId());
         return ResponseEntity.ok().body(new CodeDTO(code));
     }
 }

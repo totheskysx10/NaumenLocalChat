@@ -121,7 +121,7 @@ class ReportServiceTest {
         Chat chat1 = new Chat();
         chat1.setId(1L);
         user.getChats().add(chat1);
-        Message message = new Message(user, "message");
+        Message message = new Message(user, "message", chat1);
 
         Mockito.when(userService.getUserById(1L)).thenReturn(user);
         Report reportToSave = new Report("Report generation is in progress...", user, ReportStatus.GENERATION);

@@ -5,6 +5,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import ru.naumen.naumenlocalchat.app.repository.UserRepository;
 import ru.naumen.naumenlocalchat.domain.User;
+import ru.naumen.naumenlocalchat.exception.AuthException;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -27,7 +28,15 @@ public class SecurityContextService {
      * @param userId id пользователя
      * @return true, если пользователь с userId в данный момент авторизован
      */
-    public boolean isCurrentAuthId(Long userId) {
+    public boolean isCurrentAuthId(Long userId) throws AuthException {
+        Long currentAuthId = getCurrentAuthId();
+        return Objects.equals(currentAuthId, userId);
+    }
+
+    /**
+     * Возвращает текущий Id авторизации
+     */
+    public Long getCurrentAuthId() throws AuthException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
             Object principal = auth.getPrincipal();
@@ -36,12 +45,10 @@ public class SecurityContextService {
 
                 Optional<User> user = userRepository.findByEmail(username);
 
-                if (user.isPresent()) {
-                    return Objects.equals(user.get().getId(), userId);
-                }
+                return user.map(User::getId).orElseThrow(() -> new AuthException("Пользователь не найден!"));
             }
         }
 
-        return false;
+        throw new AuthException("Ошибка извлечения текущего Id!");
     }
 }

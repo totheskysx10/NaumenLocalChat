@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import ru.naumen.naumenlocalchat.exception.AuthException;
 import ru.naumen.naumenlocalchat.extern.infrastructure.service.SecurityContextService;
 
 /**
@@ -42,16 +43,19 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.
                 authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                        .requestMatchers("/login", "/users/register").anonymous()
+                        .requestMatchers("/login", "/users/register", "/register.html").anonymous()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/users/admin", "/users/no-admin").hasRole("ADMIN")
-                        .requestMatchers("/chats/user-chats", "/group-chats/user-chats", "/group-chats/found-user-chats",
-                                "/chats/invite-user", "/chats/create-chat", "/group-chats/enter", "/reports/generate", "/reports/user-reports")
+                        .requestMatchers("/reports/generate", "/reports/user-reports")
                         .access((authentication, context) -> {
                             Long userId = Long.parseLong(context.getRequest().getParameter("userId"));
-                            return new AuthorizationDecision(securityContextService.isCurrentAuthId(userId));
+                            try {
+                                return new AuthorizationDecision(securityContextService.isCurrentAuthId(userId));
+                            } catch (AuthException e) {
+                                throw new RuntimeException(e);
+                            }
                         })
                         .requestMatchers("/users/reset-password", "/users/request-reset-password",
-                                "/users/confirm-email", "/users/request-confirm-email").permitAll()
+                                "/users/confirm-email", "/users/request-confirm-email", "/styles.css").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(Customizer.withDefaults())

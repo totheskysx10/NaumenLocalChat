@@ -44,7 +44,7 @@ public class SecurityConfig {
         http.
                 authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers("/login", "/users/register", "/register.html").anonymous()
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/users/admin", "/users/no-admin").hasRole("ADMIN")
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/users/admin", "/users/no-admin", "/monitoring").hasRole("ADMIN")
                         .requestMatchers("/reports/generate", "/reports/user-reports")
                         .access((authentication, context) -> {
                             Long userId = Long.parseLong(context.getRequest().getParameter("userId"));
@@ -55,7 +55,7 @@ public class SecurityConfig {
                             }
                         })
                         .requestMatchers("/users/reset-password", "/users/request-reset-password",
-                                "/users/confirm-email", "/users/request-confirm-email", "/styles.css").permitAll()
+                                "/users/confirm-email", "/users/request-confirm-email", "/styles.css", "/index.html").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(Customizer.withDefaults())

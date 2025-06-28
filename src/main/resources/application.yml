@@ -30,6 +30,9 @@ app:
     confirm-email: https://localhost:5001/confirm-email/?{id}&token=
     reset-password: https://localhost:5001/reset-password?{id}&token=
 
+javamelody:
+  enabled: true
+
 yandex:
   cloud:
     access: 123

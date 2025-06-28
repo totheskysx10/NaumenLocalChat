@@ -37,6 +37,7 @@
         <jackson-core.version>2.19.0</jackson-core.version>
         <spring-cloud-aws-starter.version>3.3.1</spring-cloud-aws-starter.version>
         <spring-cloud-aws.version>3.3.1</spring-cloud-aws.version>
+        <javamelody-spring-boot-starter.version>2.5.1</javamelody-spring-boot-starter.version>
     </properties>
 
     <dependencyManagement>
@@ -88,6 +89,12 @@
             <artifactId>spring-cloud-aws-starter-s3</artifactId>
             <version>${spring-cloud-aws.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>net.bull.javamelody</groupId>
+                <artifactId>javamelody-spring-boot-starter</artifactId>
+                <version>${javamelody-spring-boot-starter.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -105,11 +112,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 
         <dependency>
@@ -198,6 +200,11 @@
         <dependency>
             <groupId>io.awspring.cloud</groupId>
             <artifactId>spring-cloud-aws-starter-s3</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>net.bull.javamelody</groupId>
+            <artifactId>javamelody-spring-boot-starter</artifactId>
         </dependency>
     </dependencies>
 

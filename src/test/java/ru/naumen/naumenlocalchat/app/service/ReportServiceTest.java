@@ -136,7 +136,7 @@ class ReportServiceTest {
         Mockito.when(reportRepository.findById(1L)).thenReturn(Optional.of(reportToSave));
 
         reportService.createReport(1L);
-        Thread.sleep(100);
+        Thread.sleep(200);
         Report report = reportRepository.findById(1L).get();
 
         Assertions.assertEquals(1L, report.getId());

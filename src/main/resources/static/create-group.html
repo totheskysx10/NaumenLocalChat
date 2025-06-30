@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Создание группового чата</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; }
+        input, textarea { display: block; margin-bottom: 10px; padding: 8px; width: 100%; }
+        button { padding: 10px 16px; }
+        #response { margin-top: 20px; color: #444; }
+    </style>
+</head>
+<body>
+<h2>Создать групповой чат</h2>
+
+<input type="number" id="admin-id" placeholder="ID администратора" />
+<input type="text" id="chat-name" placeholder="Название чата" />
+<input type="text" id="member-ids" placeholder="ID участников через запятую (например: 1,2,3)" />
+
+<button onclick="createGroupChat()">Создать</button>
+
+<div id="response"></div>
+
+<script>
+    async function createGroupChat() {
+        const adminId = document.getElementById("admin-id").value.trim();
+        const chatName = document.getElementById("chat-name").value.trim();
+        const memberIdsRaw = document.getElementById("member-ids").value.trim();
+        const responseBox = document.getElementById("response");
+
+        if (!adminId || !chatName || !memberIdsRaw) {
+            alert("Пожалуйста, заполните все поля");
+            return;
+        }
+
+        const memberIds = memberIdsRaw
+            .split(',')
+            .map(id => parseInt(id.trim()))
+            .filter(id => !isNaN(id));
+
+        const response = await fetch('/group-chats?adminId=' + encodeURIComponent(adminId), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: chatName,
+                memberIds: memberIds
+            })
+        });
+
+        if (response.ok) {
+            responseBox.innerHTML = `Групповой чат создан`;
+        } else {
+            const error = await response.text();
+            responseBox.innerHTML = `Ошибка: ${error}`;
+        }
+    }
+</script>
+</body>
+</html>

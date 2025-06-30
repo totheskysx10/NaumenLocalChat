@@ -11,6 +11,10 @@ public class GroupChatDTO extends RepresentationModel<GroupChatDTO> {
     private Long adminId;
     private Set<Long> blackListIds;
 
+    public GroupChatDTO() {
+
+    }
+
     public GroupChatDTO(Set<Long> blackListIds, Long adminId, String name, Set<Long> memberIds, Long id) {
         this.blackListIds = blackListIds;
         this.adminId = adminId;

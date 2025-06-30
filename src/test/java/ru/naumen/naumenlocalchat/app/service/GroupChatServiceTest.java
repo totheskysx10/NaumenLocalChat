@@ -87,7 +87,7 @@ class GroupChatServiceTest {
         Mockito.when(groupChatRepository.findById(1L)).thenReturn(Optional.of(groupChat));
         Mockito.when(userService.getUserById(4L)).thenReturn(user4);
 
-        groupChatService.EnterToChatByInvitationCode("12345678", 4L);
+        groupChatService.enterToChatByInvitationCode("12345678", 4L);
 
         Assertions.assertTrue(groupChat.getMembers().contains(user4));
         Assertions.assertTrue(user4.getChats().contains(groupChat));
@@ -108,7 +108,7 @@ class GroupChatServiceTest {
         Mockito.when(userService.getUserById(3L)).thenReturn(user3);
 
         Exception e = Assertions.assertThrows(EntityDuplicateException.class,
-                () -> groupChatService.EnterToChatByInvitationCode("12345678", 3L));
+                () -> groupChatService.enterToChatByInvitationCode("12345678", 3L));
 
         Assertions.assertEquals("Пользователь с id 3 уже есть в чате с id 1", e.getMessage());
     }

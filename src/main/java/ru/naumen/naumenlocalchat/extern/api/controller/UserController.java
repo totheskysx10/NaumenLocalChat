@@ -7,15 +7,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import ru.naumen.naumenlocalchat.app.service.UserService;
 import ru.naumen.naumenlocalchat.domain.User;
-import ru.naumen.naumenlocalchat.exception.AdminException;
-import ru.naumen.naumenlocalchat.exception.EntityDuplicateException;
-import ru.naumen.naumenlocalchat.exception.EntityNotFoundException;
-import ru.naumen.naumenlocalchat.exception.InvalidTokenException;
+import ru.naumen.naumenlocalchat.exception.*;
 import ru.naumen.naumenlocalchat.extern.api.assembler.UserAssembler;
-import ru.naumen.naumenlocalchat.extern.api.dto.ErrorDTO;
-import ru.naumen.naumenlocalchat.extern.api.dto.RegisterDTO;
-import ru.naumen.naumenlocalchat.extern.api.dto.UserDTO;
-import ru.naumen.naumenlocalchat.extern.api.dto.UserUpdatePasswordDTO;
+import ru.naumen.naumenlocalchat.extern.api.dto.*;
+import ru.naumen.naumenlocalchat.extern.infrastructure.service.SecurityContextService;
 
 @RestController
 @RequestMapping("/users")
@@ -24,11 +19,13 @@ public class UserController {
     private final UserService userService;
     private final UserAssembler userAssembler;
     private final PasswordEncoder bCryptPasswordEncoder;
+    private final SecurityContextService securityContextService;
 
-    public UserController(UserService userService, UserAssembler userAssembler, PasswordEncoder bCryptPasswordEncoder) {
+    public UserController(UserService userService, UserAssembler userAssembler, PasswordEncoder bCryptPasswordEncoder, SecurityContextService securityContextService) {
         this.userService = userService;
         this.userAssembler = userAssembler;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.securityContextService = securityContextService;
     }
 
     @PostMapping("/register")
@@ -104,5 +101,11 @@ public class UserController {
     public ResponseEntity<Void> removeAdminRules(@RequestParam Long userId) throws EntityNotFoundException, AdminException {
         userService.removeAdminRules(userId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/current-auth-id")
+    public ResponseEntity<UserIdDTO> getCurrentUserId() throws AuthException {
+        Long userId = securityContextService.getCurrentAuthId();
+        return ResponseEntity.ok(new UserIdDTO(userId));
     }
 }

@@ -15,3 +15,16 @@
 ## Технологии
 
 Spring Boot, Hibernate, PostgreSQL, Docker, REST API, многопоточность, логирование (SLF4J)
+
+---
+
+## Развёртывание через Docker
+
+### Сборка Docker-образа
+
+Проект собирается и упаковывается в Docker с помощью Dockerfile:
+
+```bash
+docker build -t naumen-local-chat .
+```
+

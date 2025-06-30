@@ -6,8 +6,10 @@ import ru.naumen.naumenlocalchat.app.repository.MessageRepository;
 import ru.naumen.naumenlocalchat.domain.Chat;
 import ru.naumen.naumenlocalchat.domain.GroupChat;
 import ru.naumen.naumenlocalchat.domain.Message;
+import ru.naumen.naumenlocalchat.domain.User;
 import ru.naumen.naumenlocalchat.exception.EntityNotFoundException;
 import ru.naumen.naumenlocalchat.exception.ChatException;
+import ru.naumen.naumenlocalchat.extern.api.assembler.MessageAssembler;
 
 import java.util.List;
 import java.util.Map;
@@ -22,15 +24,18 @@ public class MessageService {
     private final ChatService chatService;
     private final GroupChatService groupChatService;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final MessageAssembler messageAssembler;
 
     public MessageService(MessageRepository messageRepository,
                           ChatService chatService,
                           GroupChatService groupChatService,
-                          SimpMessagingTemplate simpMessagingTemplate) {
+                          SimpMessagingTemplate simpMessagingTemplate,
+                          MessageAssembler messageAssembler) {
         this.messageRepository = messageRepository;
         this.chatService = chatService;
         this.groupChatService = groupChatService;
         this.simpMessagingTemplate = simpMessagingTemplate;
+        this.messageAssembler = messageAssembler;
     }
 
     /**
@@ -43,13 +48,16 @@ public class MessageService {
         Chat chat = findChatOrGroupChatById(chatId);
 
         if (!chat.getMembers().contains(message.getSender())) {
+            for (User m : chat.getMembers()) {
+                System.out.println(m.getId());
+            }
             throw new ChatException("Пользователь " + message.getSender().getId() + " не в чате " + chatId);
         }
 
         message.setChat(chat);
         Message savedMessage = messageRepository.save(message);
 
-        simpMessagingTemplate.convertAndSend("/topic/chat/" + chatId, Map.of("type", "send", "message", savedMessage));
+        simpMessagingTemplate.convertAndSend("/topic/chat/" + chatId, Map.of("type", "send", "message", messageAssembler.toModel(savedMessage)));
     }
 
     /**

@@ -1,6 +1,9 @@
 package ru.naumen.naumenlocalchat.domain;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
+import ru.naumen.naumenlocalchat.app.serializer.ChatIdSerializer;
+import ru.naumen.naumenlocalchat.app.serializer.UserIdSerializer;
 
 import java.util.*;
 
@@ -58,6 +61,7 @@ public class User {
      * Чаты пользователя
      */
     @ManyToMany(mappedBy = "members", fetch = FetchType.EAGER)
+    @JsonSerialize(using = ChatIdSerializer.class)
     private List<Chat> chats;
 
     public User(String email,
@@ -136,18 +140,13 @@ public class User {
 
         User user = (User) o;
 
-        return emailConfirmed == user.emailConfirmed
-                && Objects.equals(id, user.id)
-                && Objects.equals(email, user.email)
-                && Objects.equals(password, user.password)
-                && Objects.equals(firstName, user.firstName)
-                && Objects.equals(lastName, user.lastName)
-                && Objects.equals(roles, user.roles);
+        return Objects.equals(id, user.id)
+                && Objects.equals(email, user.email);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, email, emailConfirmed, password, firstName, lastName, roles);
+        return Objects.hash(id, email);
     }
 
     /**

@@ -1,6 +1,9 @@
 package ru.naumen.naumenlocalchat.domain;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
+import ru.naumen.naumenlocalchat.app.serializer.MembersSerializer;
+import ru.naumen.naumenlocalchat.app.serializer.UserIdSerializer;
 
 import java.util.*;
 
@@ -28,6 +31,7 @@ public class Chat {
             joinColumns = @JoinColumn(name = "chat_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
+    @JsonSerialize(using = MembersSerializer.class)
     private Set<User> members;
 
     public Chat() {

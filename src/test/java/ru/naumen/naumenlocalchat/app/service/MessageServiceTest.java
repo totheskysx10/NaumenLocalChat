@@ -14,6 +14,8 @@ import ru.naumen.naumenlocalchat.domain.Message;
 import ru.naumen.naumenlocalchat.domain.User;
 import ru.naumen.naumenlocalchat.exception.EntityNotFoundException;
 import ru.naumen.naumenlocalchat.exception.ChatException;
+import ru.naumen.naumenlocalchat.extern.api.assembler.MessageAssembler;
+import ru.naumen.naumenlocalchat.extern.api.dto.MessageDTO;
 
 import java.util.HashSet;
 import java.util.List;
@@ -39,6 +41,9 @@ class MessageServiceTest {
     @Mock
     private SimpMessagingTemplate simpMessagingTemplate;
 
+    @Mock
+    private MessageAssembler messageAssembler;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -46,7 +51,8 @@ class MessageServiceTest {
                 messageRepository,
                 chatService,
                 groupChatService,
-                simpMessagingTemplate
+                simpMessagingTemplate,
+                messageAssembler
         );
     }
 
@@ -58,16 +64,18 @@ class MessageServiceTest {
         User user1 = new User("user1@test.com", "pass1", "f1", "l1");
         User user2 = new User("user2@test.com", "pass2", "f2", "l2");
         Chat chat = new Chat(Set.of(user1, user2));
-        Message message = new Message(user1, "message");
+        Message message = new Message(user1, "message", chat);
+        MessageDTO messageDTO = new MessageDTO();
 
         Mockito.when(chatService.findChatById(1L)).thenReturn(chat);
         Mockito.when(messageRepository.save(message)).thenReturn(message);
+        Mockito.when(messageAssembler.toModel(message)).thenReturn(messageDTO);
 
         messageService.sendMessage(message, 1L);
 
         Assertions.assertEquals(chat, message.getChat());
         Mockito.verify(messageRepository).save(message);
-        Mockito.verify(simpMessagingTemplate).convertAndSend("/topic/chat/1", Map.of("type", "send", "message", message));
+        Mockito.verify(simpMessagingTemplate).convertAndSend("/topic/chat/1", Map.of("type", "send", "message", messageDTO));
     }
 
     /**
@@ -79,17 +87,19 @@ class MessageServiceTest {
         User user2 = new User("user2@test.com", "pass2", "f2", "l2");
         User user3 = new User("user3@test.com", "pass3", "f3", "l3");
         GroupChat groupChat = new GroupChat(Set.of(user1, user2, user3), "name");
-        Message message = new Message(user1, "message");
+        Message message = new Message(user1, "message", groupChat);
+        MessageDTO messageDTO = new MessageDTO();
 
         Mockito.when(chatService.findChatById(2L)).thenThrow(new EntityNotFoundException("Not found"));
         Mockito.when(groupChatService.findGroupChatById(2L)).thenReturn(groupChat);
         Mockito.when(messageRepository.save(message)).thenReturn(message);
+        Mockito.when(messageAssembler.toModel(message)).thenReturn(messageDTO);
 
         messageService.sendMessage(message, 2L);
 
         Assertions.assertEquals(groupChat, message.getChat());
         Mockito.verify(messageRepository).save(message);
-        Mockito.verify(simpMessagingTemplate).convertAndSend("/topic/chat/2", Map.of("type", "send", "message", message));
+        Mockito.verify(simpMessagingTemplate).convertAndSend("/topic/chat/2", Map.of("type", "send", "message", messageDTO));
     }
 
     /**
@@ -98,7 +108,8 @@ class MessageServiceTest {
     @Test
     void testSendMessageToNonExistentChat() throws EntityNotFoundException {
         User user1 = new User("user1@test.com", "pass1", "f1", "l1");
-        Message message = new Message(user1, "message");
+        Chat chat = new Chat(Set.of(user1));
+        Message message = new Message(user1, "message", chat);
 
         Mockito.when(chatService.findChatById(1L)).thenThrow(new EntityNotFoundException("Not found"));
         Mockito.when(groupChatService.findGroupChatById(1L)).thenThrow(new EntityNotFoundException("Not found"));
@@ -119,7 +130,7 @@ class MessageServiceTest {
         User user4 = new User("user4@test.com", "pass4", "f4", "l4");
         user4.setId(4L);
         GroupChat groupChat = new GroupChat(Set.of(user1, user2, user3), "name");
-        Message message = new Message(user4, "message");
+        Message message = new Message(user4, "message", groupChat);
 
         Mockito.when(chatService.findChatById(2L)).thenThrow(new EntityNotFoundException("Not found"));
         Mockito.when(groupChatService.findGroupChatById(2L)).thenReturn(groupChat);
@@ -137,9 +148,10 @@ class MessageServiceTest {
     void testFindChatMessages() {
         User user1 = new User("user1@test.com", "pass1", "f1", "l1");
         User user2 = new User("user2@test.com", "pass2", "f2", "l2");
+        Chat chat = new Chat(Set.of(user1, user2));
 
-        Message message1 = new Message(user1, "message1");
-        Message message2 = new Message(user2, "message2");
+        Message message1 = new Message(user1, "message1", chat);
+        Message message2 = new Message(user2, "message2", chat);
         List<Message> expectedMessages = List.of(message1, message2);
 
         Mockito.when(messageRepository.findByChatIdOrderByTimestampAsc(1L)).thenReturn(expectedMessages);
@@ -157,9 +169,10 @@ class MessageServiceTest {
     void testSearchMessagesInChat() {
         User user1 = new User("user1@test.com", "pass1", "f1", "l1");
         User user2 = new User("user2@test.com", "pass2", "f2", "l2");
+        Chat chat = new Chat(Set.of(user1, user2));
 
-        Message message1 = new Message(user1, "message1");
-        Message message2 = new Message(user2, "message2");
+        Message message1 = new Message(user1, "message1", chat);
+        Message message2 = new Message(user2, "message2", chat);
         List<Message> expectedMessages = List.of(message1, message2);
 
         Mockito.when(messageRepository.findByChatIdAndContentContainingIgnoreCaseOrderByTimestampAsc(1L, "message")).thenReturn(expectedMessages);

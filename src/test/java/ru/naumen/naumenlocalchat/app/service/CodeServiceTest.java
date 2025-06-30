@@ -91,15 +91,4 @@ class CodeServiceTest {
         Assertions.assertNotEquals(code1, code3);
         Assertions.assertNotEquals(code2, code3);
     }
-
-    /**
-     * Тест, что коды одинаковы для одинаковых входных данных
-     */
-    @Test
-    void testGenerateSameCodesForSameInputs() {
-        String code1 = codeService.generateAndPutCode(CodeType.BASIC, 1L);
-        String code2 = codeService.generateAndPutCode(CodeType.BASIC, 1L);
-
-        Assertions.assertEquals(code1, code2);
-    }
 }

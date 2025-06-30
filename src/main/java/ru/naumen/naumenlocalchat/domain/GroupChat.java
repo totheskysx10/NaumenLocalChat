@@ -1,6 +1,9 @@
 package ru.naumen.naumenlocalchat.domain;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
+import ru.naumen.naumenlocalchat.app.serializer.MembersSerializer;
+import ru.naumen.naumenlocalchat.app.serializer.UserIdSerializer;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -24,17 +27,19 @@ public class GroupChat extends Chat {
      */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "admin_id", nullable = false)
+    @JsonSerialize(using = UserIdSerializer.class)
     private User admin;
 
     /**
      * Заблокированные участники (чёрный список)
      */
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "groupchat_blacklist",
             joinColumns = @JoinColumn(name = "chat_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
+    @JsonSerialize(using = MembersSerializer.class)
     private Set<User> chatBlackList;
 
     public GroupChat(Set<User> members, String name) {

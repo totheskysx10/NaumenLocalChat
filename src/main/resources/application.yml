@@ -27,8 +27,8 @@ spring:
 
 app:
   url:
-    confirm-email: https://localhost:5001/confirm-email/?{id}&token=
-    reset-password: https://localhost:5001/reset-password?{id}&token=
+    confirm-email: https://localhost:5001/users/confirm-email/?{id}&token=
+    reset-password: https://localhost:5001/users/reset-password?{id}&token=
 
 javamelody:
   enabled: true

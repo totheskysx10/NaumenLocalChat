@@ -95,7 +95,7 @@ public class UserService implements UserDetailsService {
     public void sendMessageForEmailConfirmation(Long userId) throws EntityNotFoundException {
         User user = getUserById(userId);
         String token = tokenService.generateToken(TokenType.EMAIL_CONFIRM, userId);
-        String confirmEmailLink = confirmEmailLinkTemplate.replace("{id}", "id=" + userId.toString()) + token;
+        String confirmEmailLink = confirmEmailLinkTemplate.replace("{id}", "userId=" + userId.toString()) + token;
 
         String subject = EmailData.CONFIRM_EMAIL.getEmailSubject();
         String message = String.format(EmailData.CONFIRM_EMAIL.getEmailMessage(), confirmEmailLink);
@@ -111,7 +111,7 @@ public class UserService implements UserDetailsService {
     public void sendMessageForPasswordReset(Long userId) throws EntityNotFoundException {
         User user = getUserById(userId);
         String token = tokenService.generateToken(TokenType.RESET_PASSWORD, userId);
-        String resetPasswordLink = resetPasswordLinkTemplate.replace("{id}", "id=" + userId.toString()) + token;
+        String resetPasswordLink = resetPasswordLinkTemplate.replace("{id}", "userId=" + userId.toString()) + token;
 
         String subject = EmailData.RESET_PASSWORD.getEmailSubject();
         String message = String.format(EmailData.RESET_PASSWORD.getEmailMessage(), resetPasswordLink);
@@ -133,6 +133,7 @@ public class UserService implements UserDetailsService {
             User user = getUserById(userId);
             user.setEmailConfirmed(true);
             tokenService.invalidateToken(TokenType.EMAIL_CONFIRM, token);
+            userRepository.save(user);
             log.info("Email пользователя с id {} подтверждён", userId);
         } else {
             throw new InvalidTokenException("Email пользователя с Id " + userId + " не подтверждён!");
@@ -153,6 +154,7 @@ public class UserService implements UserDetailsService {
             User user = getUserById(userId);
             user.setPassword(newEncodedPassword);
             tokenService.invalidateToken(TokenType.RESET_PASSWORD, token);
+            userRepository.save(user);
             log.info("Пароль пользователя с id {} обновлён", userId);
         } else {
             throw new InvalidTokenException("Пароль пользователя с Id " + userId + " не обновлён!");

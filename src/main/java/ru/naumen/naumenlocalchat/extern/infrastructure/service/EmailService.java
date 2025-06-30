@@ -1,11 +1,13 @@
 package ru.naumen.naumenlocalchat.extern.infrastructure.service;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
@@ -39,16 +41,17 @@ public class EmailService {
     public void sendEmail(String to, String subject, String text) {
         CompletableFuture.runAsync(() -> {
             try {
-                SimpleMailMessage message = new SimpleMailMessage();
+                MimeMessage message = mailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
 
-                message.setFrom(from);
-                message.setTo(to);
-                message.setSubject(subject);
-                message.setText(text);
+                helper.setFrom(from);
+                helper.setTo(to);
+                helper.setSubject(subject);
+                helper.setText(text, true);
 
                 mailSender.send(message);
                 log.info("Отправлено сообщение на адрес {}", to);
-            } catch (MailException e) {
+            } catch (MessagingException | MailException e) {
                 log.error(e.getMessage());
             }
         });

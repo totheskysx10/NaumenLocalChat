@@ -136,7 +136,7 @@ class UserServiceTest {
                     <html>
                         <body>
                             <p>Чтобы подтвердить адрес электронной почты, пройдите по ссылке:</p>
-                            <a href="http://test/confirm-email?id=1&token=token">Подтвердить</a>
+                            <a href="http://test/confirm-email?userId=1&token=token">Подтвердить</a>
                         </body>
                     </html>""");
     }
@@ -159,7 +159,7 @@ class UserServiceTest {
                     <html>
                         <body>
                             <p>Чтобы сменить пароль и восстановить доступ, пройдите по ссылке (действует в течение 20 минут):</p>
-                            <a href="http://test/reset-password?id=1&token=token">Сбросить пароль</a>
+                            <a href="http://test/reset-password?userId=1&token=token">Сбросить пароль</a>
                         </body>
                     </html>""");
     }

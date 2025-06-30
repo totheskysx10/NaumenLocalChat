@@ -9,6 +9,7 @@ import ru.naumen.naumenlocalchat.exception.*;
 import ru.naumen.naumenlocalchat.extern.api.assembler.GroupChatAssembler;
 import ru.naumen.naumenlocalchat.extern.api.dto.CodeDTO;
 import ru.naumen.naumenlocalchat.extern.api.dto.GroupChatDTO;
+import ru.naumen.naumenlocalchat.extern.infrastructure.service.SecurityContextService;
 
 import java.util.List;
 
@@ -18,29 +19,33 @@ public class GroupChatController {
 
     private final GroupChatService groupChatService;
     private final GroupChatAssembler groupChatAssembler;
+    private final SecurityContextService securityContextService;
 
-    public GroupChatController(GroupChatService groupChatService, GroupChatAssembler groupChatAssembler) {
+    public GroupChatController(GroupChatService groupChatService, GroupChatAssembler groupChatAssembler, SecurityContextService securityContextService) {
         this.groupChatService = groupChatService;
         this.groupChatAssembler = groupChatAssembler;
+        this.securityContextService = securityContextService;
     }
 
     @PostMapping
-    public ResponseEntity<Void> createGroupChat(@RequestBody GroupChat groupChat, @RequestParam Long adminId)
+    public ResponseEntity<Void> createGroupChat(@RequestBody GroupChatDTO groupChatDTO, @RequestParam Long adminId)
             throws ChatException, EntityNotFoundException {
+        GroupChat groupChat = groupChatAssembler.toEntity(groupChatDTO);
         groupChatService.createGroupChat(groupChat, adminId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/enter")
-    public ResponseEntity<Void> EnterByCode(@RequestParam String invitationCode, @RequestParam Long userId)
-            throws InvalidCodeException, EntityNotFoundException, EntityDuplicateException {
-        groupChatService.EnterToChatByInvitationCode(invitationCode, userId);
+    public ResponseEntity<Void> enterByCode(@RequestParam String invitationCode)
+            throws InvalidCodeException, EntityNotFoundException, EntityDuplicateException, AuthException {
+        groupChatService.enterToChatByInvitationCode(invitationCode, securityContextService.getCurrentAuthId());
         return ResponseEntity.ok().build();
     }
 
+    @Transactional
     @PostMapping("/leave")
-    public ResponseEntity<Void> leaveGroupChat(@RequestParam Long groupChatId, @RequestParam Long userId) throws EntityNotFoundException, ChatException {
-        groupChatService.leaveGroupChat(groupChatId, userId);
+    public ResponseEntity<Void> leaveGroupChat(@RequestParam Long groupChatId) throws EntityNotFoundException, ChatException, AuthException {
+        groupChatService.leaveGroupChat(groupChatId, securityContextService.getCurrentAuthId());
         return ResponseEntity.ok().build();
     }
 
@@ -51,8 +56,8 @@ public class GroupChatController {
     }
 
     @GetMapping("/user-chats")
-    public ResponseEntity<List<GroupChatDTO>> getUserGroupChats(@RequestParam Long userId) throws EntityNotFoundException {
-        List<GroupChatDTO> chats = groupChatService.findUserGroupChats(userId).stream()
+    public ResponseEntity<List<GroupChatDTO>> getCurrentUserGroupChats() throws EntityNotFoundException, AuthException {
+        List<GroupChatDTO> chats = groupChatService.findUserGroupChats(securityContextService.getCurrentAuthId()).stream()
                 .map(groupChatAssembler::toModel)
                 .toList();
 
@@ -63,9 +68,9 @@ public class GroupChatController {
         return ResponseEntity.ok().body(chats);
     }
 
-    @GetMapping("/found-user-chats")
-    public ResponseEntity<List<GroupChatDTO>> searchUserChatsByName(@RequestParam Long userId, @RequestParam String name) throws EntityNotFoundException {
-        List<GroupChatDTO> chats = groupChatService.findUserGroupChatsByNameContaining(userId, name)
+    @GetMapping("/find-user-chats")
+    public ResponseEntity<List<GroupChatDTO>> searchCurrentUserChatsByName(@RequestParam String name) throws EntityNotFoundException, AuthException {
+        List<GroupChatDTO> chats = groupChatService.findUserGroupChatsByNameContaining(securityContextService.getCurrentAuthId(), name)
                 .stream()
                 .map(groupChatAssembler::toModel)
                 .toList();

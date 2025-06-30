@@ -21,7 +21,7 @@ public class Report {
     /**
      * Содержимое
      */
-    @Column
+    @Column(columnDefinition = "text")
     private String content;
 
     /**

@@ -22,4 +22,10 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
      * @param query запрос
      */
     List<Message> findByChatIdAndContentContainingIgnoreCaseOrderByTimestampAsc(Long chatId, String query);
+
+    /**
+     * Удаляет сообщения по id чата
+     * @param chatId id чата
+     */
+    void deleteByChatId(Long chatId);
 }

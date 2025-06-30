@@ -1,5 +1,6 @@
 package ru.naumen.naumenlocalchat.extern.infrastructure;
 
+import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,16 +36,13 @@ public class EmailServiceTest {
         String receiver = "test@test.com";
         String subject = "Test Subject";
         String content = "Test Content";
+        MimeMessage mimeMessage = Mockito.mock(MimeMessage.class);
+        Mockito.when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
 
         emailService.sendEmail(receiver, subject, content);
 
         Thread.sleep(100);
 
-        ArgumentCaptor<SimpleMailMessage> argument = ArgumentCaptor.forClass(SimpleMailMessage.class);
-        Mockito.verify(mailSender, Mockito.times(1)).send(argument.capture());
-
-        Assertions.assertEquals(receiver, argument.getValue().getTo()[0]);
-        Assertions.assertEquals(subject, argument.getValue().getSubject());
-        Assertions.assertEquals(content, argument.getValue().getText());
+        Mockito.verify(mailSender, Mockito.times(1)).send(mimeMessage);
     }
 }

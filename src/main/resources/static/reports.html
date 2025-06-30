@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Отчёты пользователя</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    body { max-width: 600px; margin: 40px auto; font-family: sans-serif; }
+    input, button { padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+    button { cursor: pointer; }
+    pre { background: #f4f4f4; padding: 10px; white-space: pre-wrap; word-wrap: break-word; }
+    h2 { margin-top: 40px; }
+  </style>
+</head>
+<body>
+<h1>Управление отчётами</h1>
+
+<section>
+  <h2>Создать отчёт для пользователя</h2>
+  <button onclick="generateReport()">Создать отчёт</button>
+  <pre id="gen-result"></pre>
+</section>
+
+<section>
+  <h2>Получить отчёт по ID</h2>
+  <input type="number" id="get-reportId" placeholder="Введите reportId" />
+  <button onclick="getReportById()">Получить отчёт</button>
+  <pre id="get-result"></pre>
+</section>
+
+<section>
+  <h2>Получить список отчётов пользователя</h2>
+  <button onclick="getUserReports()">Показать отчёты</button>
+  <pre id="list-result"></pre>
+</section>
+
+<script>
+  async function generateReport() {
+    const result = document.getElementById('gen-result');
+    let currentUserId = null;
+
+    try {
+      const res = await fetch('/users/current-auth-id');
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      currentUserId = data.userId;
+    } catch {
+      alert("Не удалось получить ID пользователя");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/reports/generate?userId=${currentUserId}`, { method: 'POST' });
+      if (!res.ok) throw new Error(`Ошибка: ${res.status}`);
+      const data = await res.json();
+      result.textContent = JSON.stringify(data, null, 2);
+    } catch (e) {
+      result.textContent = `Ошибка запроса: ${e.message}`;
+    }
+  }
+
+  async function getReportById() {
+    const reportId = document.getElementById('get-reportId').value.trim();
+    const result = document.getElementById('get-result');
+    if (!reportId) {
+      alert('Введите reportId');
+      return;
+    }
+    try {
+      const res = await fetch(`/reports?reportId=${encodeURIComponent(reportId)}`);
+      if (!res.ok) throw new Error(`Ошибка: ${res.status}`);
+      const data = await res.json();
+      result.textContent = JSON.stringify(data, null, 2);
+    } catch (e) {
+      result.textContent = `Ошибка запроса: ${e.message}`;
+    }
+  }
+
+  async function getUserReports() {
+    const result = document.getElementById('list-result');
+    let currentUserId = null;
+
+    try {
+      const res = await fetch('/users/current-auth-id');
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      currentUserId = data.userId;
+    } catch {
+      alert("Не удалось получить ID пользователя");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/reports/user-reports?userId=${currentUserId}`);
+      if (res.status === 204) {
+        result.textContent = 'Нет отчетов для данного пользователя';
+        return;
+      }
+      if (!res.ok) throw new Error(`Ошибка: ${res.status}`);
+      const data = await res.json();
+      result.textContent = JSON.stringify(data, null, 2);
+    } catch (e) {
+      result.textContent = `Ошибка запроса: ${e.message}`;
+    }
+  }
+</script>
+</body>
+</html>

@@ -150,8 +150,8 @@ public class ReportService {
                 zos.putNextEntry(zipEntry);
                 zos.write(jsonBytes);
                 zos.closeEntry();
-                log.info("Создан архив с отчётом для пользователя {}", userId);
             }
+            log.info("Создан архив с отчётом для пользователя {}", userId);
         }
 
         byte[] zipBytes = Files.readAllBytes(zipPath);

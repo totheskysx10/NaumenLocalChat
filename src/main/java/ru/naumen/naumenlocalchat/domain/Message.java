@@ -48,9 +48,10 @@ public class Message {
     @JoinColumn(name = "chat_id", nullable = false)
     private Chat chat;
 
-    public Message(User sender, String content) {
+    public Message(User sender, String content, Chat chat) {
         this.sender = sender;
         this.content = content;
+        this.chat = chat;
         this.timestamp = LocalDateTime.now();
     }
 
